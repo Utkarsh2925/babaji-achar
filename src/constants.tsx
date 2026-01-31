@@ -1,0 +1,302 @@
+
+// --- FESTIVAL & EVENT CONFIGURATION ---
+export interface FestivalConfig {
+    id: string;
+    name: string;
+    greeting: string;
+    offer: string;
+    offerCode: string; // e.g., 'DIWALI20'
+    colors: { from: string; to: string; text: string };
+    icons: string[]; // Floating emojis
+    isActive: boolean; // Computed at runtime
+}
+
+const CURRENT_DATE = new Date();
+
+// Helper to check if today matches a specific day/month
+const isDate = (d: number, m: number) => CURRENT_DATE.getDate() === d && CURRENT_DATE.getMonth() === m - 1;
+
+export const GET_ACTIVE_FESTIVAL = (): FestivalConfig | null => {
+    // 1. Republic Day (Jan 26)
+    if (isDate(26, 1)) return {
+        id: 'REPUBLIC_DAY',
+        name: 'Republic Day',
+        greeting: 'Happy Republic Day! 🇮🇳',
+        offer: 'Free Delivery on Orders above ₹499',
+        offerCode: 'JAIHIND',
+        colors: { from: 'from-orange-500', to: 'to-green-600', text: 'text-blue-800' },
+        icons: ['🇮🇳', '🪷', '🕌', '🏏', '✨', '🐅', '🫡', '🇮🇳'],
+        isActive: true
+    };
+
+    // 2. Holi (March 14, 2025 - approx)
+    if (isDate(14, 3)) return {
+        id: 'HOLI',
+        name: 'Holi',
+        greeting: 'Happy Holi! 🎨',
+        offer: 'Flat 20% OFF on Sweet Pickles',
+        offerCode: 'HOLIHAI',
+        colors: { from: 'from-pink-500', to: 'to-purple-600', text: 'text-pink-700' },
+        icons: ['🎨', '🔫', '🎈', '💧', '🌈', '💜', '🖌️'],
+        isActive: true
+    };
+
+    // 3. Diwali (Oct 20, 2025 - approx)
+    if (isDate(20, 10)) return {
+        id: 'DIWALI',
+        name: 'Diwali',
+        greeting: 'Happy Diwali! 🪔',
+        offer: 'Free Gift Box with Family Packs',
+        offerCode: 'LAXMI',
+        colors: { from: 'from-amber-500', to: 'to-red-600', text: 'text-amber-900' },
+        icons: ['🪔', '✨', '🎇', '🧨', '🍬', '🕉️', '🕯️'],
+        isActive: true
+    };
+
+    // 4. Valentine's Day (Feb 14)
+    if (isDate(14, 2)) return {
+        id: 'VALENTINE',
+        name: "Valentine's Day",
+        greeting: 'Share the Love ❤️',
+        offer: 'Buy 1 Get 1 on Sweet Mango',
+        offerCode: 'LOVE25',
+        colors: { from: 'from-red-500', to: 'to-pink-500', text: 'text-red-800' },
+        icons: ['❤️', '🌹', '💑', '🍫', '💌', '🧸', '💘'],
+        isActive: true
+    };
+
+    // 5. Christmas (Dec 25)
+    if (isDate(25, 12)) return {
+        id: 'CHRISTMAS',
+        name: "Christmas",
+        greeting: 'Merry Christmas! 🎄',
+        offer: 'Holiday Special: 15% OFF',
+        offerCode: 'SANTA',
+        colors: { from: 'from-red-600', to: 'to-green-700', text: 'text-red-900' },
+        icons: ['🎄', '🎅', '❄️', '⛄', '🎁', '🔔', '🦌'],
+        isActive: true
+    };
+
+
+
+    // --- DEMO MODE: Winter Special (Active) ---
+    if (isDate(27, 1)) return {
+        id: 'WINTER_FEST',
+        name: 'Winter Season Special',
+        greeting: 'Winter Delights! ❄️',
+        offer: 'Limited Time: Free Shipping Today!',
+        offerCode: 'WINTER25',
+        colors: { from: 'from-blue-400', to: 'to-indigo-600', text: 'text-blue-900' },
+        icons: ['❄️', '⛄', '🧤', '☕', '🧣', '🌬️', '🧥', '🧊'],
+        isActive: true
+    };
+
+    return null;
+};
+
+export const BRAND_CONFIG = {
+    PARENT_BRAND: "Bhojnamrit Foods",
+    PRODUCT_BRAND: "बाबा जी",
+    WHATSAPP_NUMBER: "917754865997",
+    UPI_ID: "7754865997@kotak811",
+    DELIVERY_AREA: "Prayagraj Only (प्रयागराज)",
+    INSTAGRAM_URL: "https://www.instagram.com/babajiachar/",
+    LOGO_URL: "/images/logo.jpg",
+    EMAIL: "mailbabajiachar@gmail.com",
+    QR_IMAGE: "/images/payment_qr_new.jpg",
+    BANK_DETAILS: {
+        ACCOUNT_NO: "6050917404",
+        IFSC: "KKBK0005076",
+        BRANCH: "ALLAHABAD-CHOWK"
+    }
+};
+
+/**
+ * RELIABILITY UPDATE:
+ * Google Drive links are often blocked. Switched to high-performance Unsplash URLs 
+ * that are optimized for e-commerce performance.
+ */
+
+export const INITIAL_PRODUCTS = [
+    {
+        id: "mixed-pickle-01",
+        category: "Mix",
+        name: { hi: "मिश्रित अचार", en: "Mixed Pickle" },
+        description: {
+            hi: "विभिन्न मौसमी सब्जियों और मसालों का बेहतरीन मिश्रण। शुद्ध सरसों के तेल में निर्मित।",
+            en: "A premium blend of seasonal vegetables and traditional spices preserved in pure mustard oil."
+        },
+        tagline: { hi: "पीढ़ियों की परंपरा से बना शुद्ध देसी अचार", en: "Pure Traditional Homemade Pickle" },
+        mainImage: "/images/mixed_replacement.jpg",
+        galleryImages: [
+            "/images/mixed_replacement.jpg",
+            "/images/mixed.jpg",
+            "https://images.unsplash.com/photo-1589135340945-df939bcbf41e?q=80&w=800&auto=format&fit=crop"
+        ],
+        ingredients: ["Mango", "Carrot", "Chilli", "Lemon", "Mustard Oil", "Hing"],
+        isFeatured: true,
+        isActive: true,
+        variants: [
+            { id: "v-100", size: "100g", mrp: 30, stock: 100 },
+            { id: "v-250", size: "250g", mrp: 100, stock: 50 },
+            { id: "v-500", size: "500g", mrp: 180, stock: 30 },
+            { id: "v-1kg", size: "1kg", mrp: 340, stock: 15 }
+        ]
+    },
+    {
+        id: "aawla-pickle-01",
+        category: "Aawla",
+        name: { hi: "आंवला का अचार", en: "Aawla Pickle" },
+        description: {
+            hi: "सेहत और स्वाद से भरपूर आंवला का पारंपरिक अचार। विटामिन-सी का खजाना।",
+            en: "Traditional gooseberry pickle, rich in Vitamin C and prepared with heritage recipes."
+        },
+        tagline: { hi: "सेहत और स्वाद का अनोखा संगम", en: "A Perfect Blend of Health and Taste" },
+        mainImage: "/images/aawla_update.jpg",
+        galleryImages: ["/images/aawla_update.jpg", "/images/aawla.jpg"],
+        ingredients: ["Aawla", "Fennel Seeds", "Mustard Oil", "Spices"],
+        isFeatured: true,
+        isActive: true,
+        variants: [
+            { id: "v-250", size: "250g", mrp: 180, stock: 30 },
+            { id: "v-500", size: "500g", mrp: 350, stock: 25 }
+        ]
+    },
+    {
+        id: "kathal-pickle-01",
+        category: "Kathal",
+        name: { hi: "कटहल का अचार", en: "Kathal Pickle" },
+        description: {
+            hi: "मसालेदार और चटपटा कटहल का अचार। मां के हाथों जैसा असली देसी स्वाद।",
+            en: "Spicy and tangy Jackfruit pickle. Authentic homemade taste just like mom's recipe."
+        },
+        tagline: { hi: "स्वाद जो आपको बचपन की याद दिला दे", en: "Taste That Takes You Back Home" },
+        mainImage: "/images/kathal_update.jpg",
+        galleryImages: ["/images/kathal_update.jpg", "/images/kathal.jpg"],
+        ingredients: ["Jackfruit", "Garlic", "Ginger", "Mustard Oil", "Red Chilli"],
+        isFeatured: true,
+        isActive: true,
+        variants: [
+            { id: "v-250", size: "250g", mrp: 150, stock: 20 },
+            { id: "v-500", size: "500g", mrp: 280, stock: 15 },
+            { id: "v-1kg", size: "1kg", mrp: 540, stock: 10 }
+        ]
+    },
+    {
+        id: "red-chilli-pickle-01",
+        category: "Chilli",
+        name: { hi: "बनारसी भरवा लाल मिर्च", en: "Banarasi Red Chilli" },
+        description: {
+            hi: "बनारस की मशहूर भरवा लाल मिर्च। मोटे मसालों और अमचूर का भरपूर स्वाद।",
+            en: "Famous Banarasi stuffed red chilli pickle. Bursting with flavor from hand-ground spices."
+        },
+        tagline: { hi: "बनारस का विश्व प्रसिद्ध स्वाद", en: "The World-Famous Taste of Banaras" },
+        mainImage: "/images/red_chilli_update.jpg",
+        galleryImages: ["/images/red_chilli_update.jpg", "/images/red-chilli.jpg"],
+        ingredients: ["Red Chilli", "Mustard Seeds", "Amchoor", "Mustard Oil", "Hing"],
+        isFeatured: true,
+        isActive: true,
+        variants: [
+            { id: "v-250", size: "250g", mrp: 190, stock: 25 },
+            { id: "v-500", size: "500g", mrp: 360, stock: 20 },
+            { id: "v-1kg", size: "1kg", mrp: 700, stock: 10 }
+        ]
+    },
+    {
+        id: "suran-pickle-01",
+        category: "Suran",
+        name: { hi: "सूरन (जिमीकंद) का अचार", en: "Suran (Yam) Pickle" },
+        description: {
+            hi: "देसी सूरन और शुद्ध मसालों से बना पारंपरिक अचार। स्वास्थ्य के लिए लाभदायक।",
+            en: "Traditional Elephant Foot Yam pickle made with authentic spices. Great for digestion."
+        },
+        tagline: { hi: "स्वाद और सेहत का खजाना", en: "Treasure of Taste and Health" },
+        mainImage: "/images/suran_update.jpg",
+        galleryImages: ["/images/suran_update.jpg", "/images/suran.jpg", "https://images.unsplash.com/photo-1620556106606-d089100867a5?auto=format&fit=crop&q=80"],
+        ingredients: ["Elephant Foot Yam", "Mustard Oil", "Spices", "Lemon"],
+        isFeatured: true,
+        isActive: true,
+        variants: [
+            { id: "v-250", size: "250g", mrp: 150, stock: 50 },
+            { id: "v-500", size: "500g", mrp: 280, stock: 30 }
+        ]
+    },
+    {
+        id: "swadam-pack-combo",
+        category: "Special",
+        name: { hi: "स्वादम पैक (Grand Combo)", en: "Swadam Pack (Grand Combo)" },
+        description: {
+            hi: "हमारे सभी 7 शानदार अचारों का एक अनूठा संगम (80 ग्राम प्रत्येक)। स्वाद का असली महाकुंभ!",
+            en: "A grand collection of all 7 premium flavors (80g each). A true treasure chest of taste!"
+        },
+        tagline: { hi: "एक पैक में पूरा स्वाद", en: "All Flavors in One Pack" },
+        mainImage: "/images/swadam_update_final.jpg",
+        galleryImages: ["/images/swadam_update_final.jpg"],
+        ingredients: ["Mixed", "Mango", "Aawla", "Kathal", "Lemon", "Red Chilli", "Green Chilli"],
+        isFeatured: true,
+        isActive: true,
+        isSpecialOffer: true,
+        offerLabel: { hi: "धमाका ऑफर", en: "Grand Offer" },
+        variants: [
+            { id: "v-combo", size: "Combo (7 x 80g)", mrp: 499, stock: 100 }
+        ]
+    },
+    {
+        id: "mango-pickle-01",
+        category: "Mango",
+        name: { hi: "आम का अचार", en: "Mango Pickle" },
+        description: {
+            hi: "कच्चे आम और शुद्ध सरसों के तेल का लाजवाब संगम। असली बनारसी स्वाद।",
+            en: "Authentic green mangoes preserved in pure mustard oil."
+        },
+        tagline: { hi: "सदाबहार आम का स्वाद", en: "Evergreen Taste of Mango" },
+        mainImage: "/images/mango_replacement.jpg",
+        galleryImages: ["/images/mango_replacement.jpg", "/images/mango.jpg"],
+        ingredients: ["Green Mango", "Mustard Oil", "Turmeric", "Hing", "Red Chilli"],
+        isFeatured: false,
+        isActive: true,
+        variants: [
+            { id: "v1", size: "250g", mrp: 120, stock: 40 },
+            { id: "v2", size: "500g", mrp: 220, stock: 25 }
+        ]
+    },
+    {
+        id: "lemon-pickle-01",
+        category: "Lemon",
+        name: { hi: "नींबू का अचार", en: "Lemon Pickle" },
+        description: {
+            hi: "खट्टा-मीठा नींबू का अचार। बिना तेल के तैयार।",
+            en: "Sweet and sour lemon pickle, oil-free."
+        },
+        tagline: { hi: "चटपटा और पाचक", en: "Tangy and Digestive" },
+        mainImage: "/images/lemon_update.jpg",
+        galleryImages: ["/images/lemon_update.jpg", "/images/new_lemon.jpg"],
+        ingredients: ["Lemon", "Ajwain", "Black Salt"],
+        isFeatured: false,
+        isActive: true,
+        variants: [
+            { id: "v1", size: "250g", mrp: 110, stock: 45 },
+            { id: "v2", size: "500g", mrp: 200, stock: 25 }
+        ]
+    },
+    {
+        id: "green-chilli-pickle-01",
+        category: "Chilli",
+        name: { hi: "हरी मिर्च का अचार", en: "Green Chilli Pickle" },
+        description: {
+            hi: "तीखा और चटपटा हरी मिर्च का अचार।",
+            en: "Spicy and pungent green chilli pickle."
+        },
+        tagline: { hi: "हर खाने में तीखापन", en: "Spiciness in Every Meal" },
+        mainImage: "/images/green_chilli_update.jpg",
+        galleryImages: ["/images/green_chilli_update.jpg", "/images/new_mix.jpg", "https://images.unsplash.com/photo-1589669916111-3668079df95d?auto=format&fit=crop&q=80"],
+        ingredients: ["Green Chilli", "Lemon Juice", "Salt", "Mustard Oil"],
+        isFeatured: false,
+        isActive: true,
+        variants: [
+            { id: "v-250", size: "250g", mrp: 100, stock: 60 },
+            { id: "v-500", size: "500g", mrp: 180, stock: 30 },
+            { id: "v-1kg", size: "1kg", mrp: 320, stock: 20 }
+        ]
+    }
+];
