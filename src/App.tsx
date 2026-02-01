@@ -69,7 +69,7 @@ const AppContent: React.FC = () => {
 
   const [lang, setLang] = useState<'hi' | 'en'>('hi');
   const [view, setView] = useState<'HOME' | 'DETAILS' | 'CART' | 'CHECKOUT' | 'SUCCESS' | 'PROFILE' | 'LOGIN' | 'ADMIN' | 'STORES'>('HOME');
-  const [paymentProofType, setPaymentProofType] = useState<'UTR' | 'SCREENSHOT'>('UTR');
+  // Removed paymentProofType as requested
 
   type Coupon = { code: string; type: 'FLAT' | 'PERCENTAGE'; value: number; freeDelivery?: boolean; };
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
@@ -1141,52 +1141,43 @@ const AppContent: React.FC = () => {
               </div>
 
               <div className="bg-stone-50 p-6 sm:p-10 rounded-3xl h-fit border border-stone-100">
-                <h3 className="hindi-font text-xl sm:text-2xl font-black text-orange-900 flex items-center gap-2 mb-6"><QrCode size={24} /> Payment Details</h3>
+                <h3 className="hindi-font text-xl sm:text-2xl font-black text-orange-900 flex items-center gap-2 mb-6"><QrCode size={24} /> Pay via App</h3>
+
                 <div className="space-y-6">
-                  <div className="bg-orange-50 p-6 rounded-2xl flex flex-col items-center gap-4 text-center border-2 border-orange-100">
-                    <p className="text-base font-black text-orange-800">Scan to Pay</p>
-                    <div className="bg-white p-4 rounded-xl shadow-sm">
-                      <ImageWithFallback src={BRAND_CONFIG.QR_IMAGE || ""} alt="Payment QR" className="w-48 h-48 object-contain" fallbackSrc="/images/logo.jpg" />
-                    </div>
-                    <div className="text-center space-y-1 mt-2">
-                      <p className="text-lg text-orange-700 font-black">Total Payable: ₹{cartValues.finalTotal}</p>
-                      {cartValues.bulkDiscount > 0 && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold block mt-1">10% OFF on 1kg packs applied</span>}
-                      {cartValues.couponDiscount > 0 && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold block mt-1">Coupon {appliedCoupon?.code} applied</span>}
+                  <div className="bg-orange-50 p-6 rounded-2xl border-2 border-orange-100 text-center">
+                    <p className="font-bold text-orange-800 mb-4 text-sm uppercase tracking-widest">Select your UPI App to Pay</p>
+
+                    <div className="grid grid-cols-1 gap-4">
+                      {/* Paytm Button */}
+                      <a
+                        href={`upi://pay?pa=9555809329@pthdfc&pn=BabajiAchar&am=${cartValues.finalTotal}&tn=Order for ${user?.name || 'Guest'}&cu=INR`}
+                        className="bg-white border-2 border-stone-200 hover:border-[#00BAF2] p-4 rounded-xl flex items-center justify-center gap-3 shadow-sm transition-all active:scale-95 group"
+                      >
+                        <span className="font-black text-[#00BAF2] text-xl">Paytm</span>
+                        <span className="bg-[#00BAF2] text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Fast</span>
+                      </a>
+
+                      {/* PhonePe Button */}
+                      <a
+                        href={`upi://pay?pa=8005112529@ybl&pn=BabajiAchar&am=${cartValues.finalTotal}&tn=Order for ${user?.name || 'Guest'}&cu=INR`}
+                        className="bg-white border-2 border-stone-200 hover:border-[#5f259f] p-4 rounded-xl flex items-center justify-center gap-3 shadow-sm transition-all active:scale-95"
+                      >
+                        <span className="font-black text-[#5f259f] text-xl">PhonePe</span>
+                      </a>
+
+                      {/* GPay Button */}
+                      <a
+                        href={`upi://pay?pa=ish29102003@okicici&pn=BabajiAchar&am=${cartValues.finalTotal}&tn=Order for ${user?.name || 'Guest'}&cu=INR`}
+                        className="bg-white border-2 border-stone-200 hover:border-[#EA4335] p-4 rounded-xl flex items-center justify-center gap-3 shadow-sm transition-all active:scale-95"
+                      >
+                        <span className="font-black text-stone-600 text-xl group-hover:text-[#EA4335]"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">P</span><span className="text-[#FBBC05]">a</span><span className="text-[#34A853]">y</span></span>
+                      </a>
                     </div>
 
-                    {BRAND_CONFIG.BANK_DETAILS && (
-                      <details className="w-full mt-4 bg-white/60 rounded-xl border border-orange-100 text-left group">
-                        <summary className="p-4 font-black text-orange-400 uppercase tracking-widest cursor-pointer list-none flex justify-between items-center text-xs select-none">
-                          Bank Transfer Details
-                          <ChevronRight size={16} className="text-orange-300 group-open:rotate-90 transition-transform" />
-                        </summary>
-                        <div className="px-4 pb-4 space-y-1 text-sm text-stone-600 font-bold font-mono animate-in slide-in-from-top-1 duration-200">
-                          <div className="flex justify-between"><span>A/C No:</span> <span className="text-orange-900 select-all">{BRAND_CONFIG.BANK_DETAILS.ACCOUNT_NO}</span></div>
-                          <div className="flex justify-between"><span>IFSC:</span> <span className="text-orange-900 select-all">{BRAND_CONFIG.BANK_DETAILS.IFSC}</span></div>
-                          <div className="flex justify-between"><span>Branch:</span> <span className="text-orange-900">{BRAND_CONFIG.BANK_DETAILS.BRANCH}</span></div>
-                        </div>
-                      </details>
-                    )}
+                    <p className="text-xs text-stone-400 font-bold mt-6">
+                      * You will be redirected to the app to complete payment.
+                    </p>
                   </div>
-
-                  <div className="flex gap-4">
-                    <button onClick={() => setPaymentProofType('UTR')} className={`flex-1 py-3 rounded-xl border-2 font-black text-sm uppercase tracking-wider transition-all ${paymentProofType === 'UTR' ? 'border-orange-600 bg-orange-100 text-orange-900 shadow-inner' : 'border-stone-100 bg-stone-50 text-stone-400'}`}>Enter UTR ID</button>
-                    <button onClick={() => setPaymentProofType('SCREENSHOT')} className={`flex-1 py-3 rounded-xl border-2 font-black text-sm uppercase tracking-wider transition-all ${paymentProofType === 'SCREENSHOT' ? 'border-orange-600 bg-orange-100 text-orange-900 shadow-inner' : 'border-stone-100 bg-stone-50 text-stone-400'}`}>Share Screenshot</button>
-                  </div>
-
-                  {paymentProofType === 'UTR' ? (
-                    <div>
-                      <input type="text" placeholder={t.utr} className="w-full p-4 sm:p-5 bg-stone-50 rounded-xl border border-orange-50 outline-none focus:border-orange-500 font-bold border-l-4 border-l-orange-500" id="c-utr" required />
-                      <p className="text-[11px] text-stone-400 font-bold mt-1">* Please enter correct UTR for fast verification</p>
-                    </div>
-                  ) : (
-                    <div className="p-5 bg-green-50 border-2 border-green-100 rounded-xl text-green-800 font-bold text-center animate-in fade-in">
-                      <div className="flex flex-col items-center gap-2">
-                        <CheckCircle2 size={32} className="text-green-600" />
-                        <span>I will share the payment screenshot on WhatsApp after placing the order.</span>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 <button onClick={() => {
@@ -1194,9 +1185,8 @@ const AppContent: React.FC = () => {
                   const addr = (document.getElementById('c-addr') as HTMLInputElement).value;
                   const pin = (document.getElementById('c-pin') as HTMLInputElement).value;
                   const phone = (document.getElementById('c-phone') as HTMLInputElement).value;
-                  const utr = paymentProofType === 'UTR' ? (document.getElementById('c-utr') as HTMLInputElement)?.value : "Will Share Screenshot";
 
-                  if (!name || !addr || !pin || !phone || !utr) return alert("Please fill all details");
+                  if (!name || !addr || !pin || !phone) return alert("Please fill all details");
 
                   // Random 6-digit Order ID
                   const randomOrderId = Math.floor(100000 + Math.random() * 900000);
@@ -1208,7 +1198,7 @@ const AppContent: React.FC = () => {
                     totalAmount: cartValues.finalTotal,
                     customerDetails: { fullName: name, phone, street: addr, city: 'Prayagraj', state: 'UP', pincode: pin },
                     paymentMethod: 'UPI',
-                    utrNumber: utr
+                    utrNumber: 'UPI_APP_REDIRECT'
                   };
                   setOrders([newOrder, ...orders]);
                   localStorage.setItem('bj_orders', JSON.stringify([newOrder, ...orders]));
