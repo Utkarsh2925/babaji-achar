@@ -423,7 +423,7 @@ const AppContent: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col font-sans selection:bg-amber-200" style={{ zoom: 0.8 }}>
+    <div className="min-h-screen flex flex-col font-sans selection:bg-amber-200">
       <Analytics />
       {/* FESTIVAL TOP BANNER */}
       {/* FESTIVAL TOP BANNER */}
@@ -484,15 +484,20 @@ const AppContent: React.FC = () => {
 
         <div className="max-w-7xl mx-auto px-4 py-4 relative z-10">
           <div className="flex items-center justify-between relative">
-            {/* 1. Left: Logo */}
-            <div className="flex-shrink-0 z-20">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-3 border-amber-200 shadow-lg cursor-pointer hover:scale-105 transition-all duration-300 bg-white" onClick={() => navigate('HOME')}>
+            {/* 1. Left: Logo & Brand (Mobile) */}
+            <div className="flex items-center gap-3 z-20">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-3 border-amber-200 shadow-lg cursor-pointer hover:scale-105 transition-all duration-300 bg-white flex-shrink-0" onClick={() => navigate('HOME')}>
                 <ImageWithFallback src={BRAND_CONFIG.LOGO_URL} alt="Logo" className="w-full h-full object-cover" />
+              </div>
+              {/* Mobile Brand Name (Visible only on small screens) */}
+              <div className="block lg:hidden leading-none">
+                <h1 className="hindi-font text-2xl font-black text-amber-900 tracking-tight">{BRAND_CONFIG.PRODUCT_BRAND}</h1>
+                <p className="text-[10px] text-amber-700 font-bold uppercase tracking-widest opacity-80">{BRAND_CONFIG.PARENT_BRAND}</p>
               </div>
             </div>
 
-            {/* 2. Center: Brand Name */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            {/* 2. Center: Brand Name (Desktop Only - Absolute Center) */}
+            <div className="absolute inset-0 hidden lg:flex items-center justify-center pointer-events-none z-10">
               <div className="text-center">
                 <h1 className="hindi-font text-3xl sm:text-5xl font-black text-amber-900 tracking-tight leading-none drop-shadow-sm">{BRAND_CONFIG.PRODUCT_BRAND}</h1>
                 <p className="text-xs sm:text-sm text-amber-700 font-bold uppercase tracking-widest opacity-80 mt-1">{BRAND_CONFIG.PARENT_BRAND}</p>
@@ -598,13 +603,11 @@ const AppContent: React.FC = () => {
                 <form onSubmit={(e) => {
                   handleLogin(e);
                   const isEmail = loginPhone.includes('@');
+                  // Auth redirects and toasts removed as requested
                   if (isEmail) {
-                    addToast('message', `Magic Link Sent`, `Check your inbox at ${loginPhone}`);
-                    setTimeout(() => window.open(`mailto:${loginPhone}?subject=Login Verification - ${BRAND_CONFIG.PRODUCT_BRAND}&body=Your login code is 123456`, '_blank'), 1000);
+                    // console.log("Silent Magic Link Logic");
                   } else {
-                    addToast('message', `OTP Sent to ${loginPhone}`, 'Check your WhatsApp/SMS for verification code.');
-                    const otpUrl = `https://wa.me/${BRAND_CONFIG.WHATSAPP_NUMBER}?text=Verify me for login. My phone: ${loginPhone}`;
-                    setTimeout(() => window.open(otpUrl, '_blank'), 1500);
+                    // console.log("Silent OTP Logic");
                   }
                 }} className="space-y-8">
                   <div className="space-y-6">
