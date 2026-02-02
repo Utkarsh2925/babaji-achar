@@ -310,7 +310,25 @@ export const UI_TEXT = {
         login: "लॉगिन", signup: "साइन अप", account: "खाता", logout: "लॉगआउट",
         reviews: "ग्राहक समीक्षा", writeReview: "अपनी समीक्षा लिखें", submitReview: "समीक्षा सबमिट करें", noReviews: "अभी तक कोई समीक्षा नहीं है।", verifiedBuyer: "सत्यापित खरीदार", rating: "रेटिंग", comment: "टिप्पणी",
         trackOrder: "ऑर्डर ट्रैकिंग", adminPanel: "एडमिन डैशबोर्ड", manageOrders: "ऑर्डर प्रबंधित करें", updateStatus: "स्थिति बदलें",
-        suran: "सूरन (जिमीकंद)"
+        suran: "सूरन (जिमीकंद)",
+        // Checkout & Payment
+        scanToPay: "स्कैन करके भुगतान करें", orPayViaApp: "या ऐप से भुगतान करें",
+        paymentVerification: "भुगतान सत्यापन", txnId: "UTR / ट्रांजैक्शन ID",
+        txnPlaceholder: "जैसे 4352xxxxxxxx", txnRequired: "* ऑटो-वेरिफिकेशन के लिए आवश्यक",
+        paytm: "Paytm", phonepe: "PhonePe", gpay: "GPay",
+        confirmOrder: "ऑर्डर कन्फर्म करें",
+        orderPreview: "ऑर्डर विवरण", subtotal: "उप-योग", deliveryCharges: "डिलीवरी शुल्क",
+        bulkSavings: "बचत",
+        mobileNo: "मोबाइल नंबर", upiId: "UPI आईडी",
+        sendScreenshot: "या स्क्रीनशॉट भेजें",
+        screenshotNote: "* अगर UTR उपलब्ध नहीं है तो व्हाट्सएप पर स्क्रीनशॉट भेजें",
+        // Cart & Forms
+        completeDetails: "अपना विवरण नीचे भरें",
+        cityPlaceholder: "शहर (प्रयागराज)", pincodePlaceholder: "पिन कोड",
+        orderSummary: "ऑर्डर का सारांश",
+        cartEmpty: "आपकी कार्ट खाली है", startShopping: "खरीदारी शुरू करें",
+        tipBulk: "सुझाव: 1kg पैक पर 10% की छूट पाएं!",
+        coupon: "कूपन"
     },
     en: {
         home: "Home", shop: "Shop", cart: "Cart", checkout: "Checkout", back: "Back", add: "Add to Cart",
@@ -320,6 +338,24 @@ export const UI_TEXT = {
         login: "Login", signup: "Sign Up", account: "Account", logout: "Logout",
         reviews: "Customer Reviews", writeReview: "Write your review", submitReview: "Submit Review", noReviews: "No reviews yet.", verifiedBuyer: "Verified Buyer", rating: "Rating", comment: "Comment",
         trackOrder: "Order Tracking", adminPanel: "Admin Dashboard", manageOrders: "Manage Orders", updateStatus: "Update Status",
-        suran: "Suran (Yam)"
+        suran: "Suran (Yam)",
+        // Checkout & Payment
+        scanToPay: "Scan to Pay", orPayViaApp: "Or Pay via App",
+        paymentVerification: "Payment Verification", txnId: "Transaction ID / UTR No.",
+        txnPlaceholder: "e.g. 4352xxxxxxxx", txnRequired: "* Required for auto-verification",
+        paytm: "Paytm", phonepe: "PhonePe", gpay: "GPay",
+        confirmOrder: "Confirm & Place Order",
+        orderPreview: "Order Preview", subtotal: "Subtotal", deliveryCharges: "Delivery Charges",
+        bulkSavings: "Bulk Savings",
+        mobileNo: "Mobile No.", upiId: "UPI ID",
+        sendScreenshot: "Or Send Screenshot",
+        screenshotNote: "* Share proof on WhatsApp if UTR is unavailable",
+        // Cart & Forms
+        completeDetails: "Complete your order details below",
+        cityPlaceholder: "City (Prayagraj)", pincodePlaceholder: "Pincode",
+        orderSummary: "Order Summary",
+        cartEmpty: "Your cart is empty", startShopping: "Start Shopping",
+        tipBulk: "Tip: Get 10% OFF on 1kg packs!",
+        coupon: "Coupon"
     }
 };

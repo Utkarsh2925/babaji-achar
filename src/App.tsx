@@ -4,8 +4,11 @@ import {
   ShoppingCart, User as UserIcon, ChevronRight, Instagram, Trash2, CheckCircle2, QrCode,
   ArrowLeft, MapPin, Plus, Minus, Globe, ShieldCheck, Search, Sparkles, Star, Leaf,
   MessageCircle, Package, XCircle, LogIn, Settings, Phone, ArrowRight, Shield,
-  ImageIcon, Mail
+  ImageIcon, Mail, Copy
 } from 'lucide-react';
+import paymentQr from './assets/payment_qr.jpg';
+import { PaymentService } from './services/PaymentService';
+import { WhatsAppService } from './services/WhatsAppService';
 import { BRAND_CONFIG, INITIAL_PRODUCTS, GET_ACTIVE_FESTIVAL, UI_TEXT } from './constants';
 import type { Product, CartItem, Order, OrderStatus, User, Review } from './types';
 
@@ -64,11 +67,13 @@ import type { Store } from './types';
 // import type { RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
 
 
+import LegalPage from './components/Legal/LegalPage';
+
 const AppContent: React.FC = () => {
   const { addToast } = useNotification();
 
   const [lang, setLang] = useState<'hi' | 'en'>('hi');
-  const [view, setView] = useState<'HOME' | 'DETAILS' | 'CART' | 'CHECKOUT' | 'SUCCESS' | 'PROFILE' | 'LOGIN' | 'ADMIN' | 'STORES'>('HOME');
+  const [view, setView] = useState<'HOME' | 'DETAILS' | 'CART' | 'CHECKOUT' | 'SUCCESS' | 'PROFILE' | 'LOGIN' | 'ADMIN' | 'STORES' | 'PRIVACY' | 'REFUND' | 'TERMS' | 'DISCLAIMER'>('HOME');
   // Removed paymentProofType as requested
 
   type Coupon = { code: string; type: 'FLAT' | 'PERCENTAGE'; value: number; freeDelivery?: boolean; };
@@ -119,29 +124,41 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     // 1. Support Logic (Orders, User, Stores, Products)
-    try {
-      const savedOrders = localStorage.getItem('bj_orders');
-      if (savedOrders) setOrders(JSON.parse(savedOrders));
-    } catch (e) { console.error("Failed to load orders", e); }
+    const loadData = () => {
+      try {
+        const savedOrders = localStorage.getItem('bj_orders');
+        if (savedOrders) setOrders(JSON.parse(savedOrders));
+      } catch (e) { console.error("Failed to load orders", e); }
 
-    try {
-      const savedUser = localStorage.getItem('bj_user');
-      if (savedUser) {
-        const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
-        if (parsedUser?.phone) setLoginPhone(String(parsedUser.phone));
+      try {
+        const savedUser = localStorage.getItem('bj_user');
+        if (savedUser) {
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
+          if (parsedUser?.phone) setLoginPhone(String(parsedUser.phone));
+        }
+      } catch (e) { console.error("Failed to load user", e); }
+
+      try {
+        const savedStores = localStorage.getItem('bj_stores');
+        if (savedStores) setStores(JSON.parse(savedStores as string));
+      } catch (e) { console.error("Failed to load stores", e); }
+    };
+
+    loadData();
+
+    // Real-time Sync across tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'bj_orders' || e.key === 'bj_stores' || e.key === 'bj_user') {
+        loadData();
       }
-    } catch (e) { console.error("Failed to load user", e); }
-
-    try {
-      const savedStores = localStorage.getItem('bj_stores');
-      if (savedStores) setStores(JSON.parse(savedStores));
-    } catch (e) { console.error("Failed to load stores", e); }
+    };
+    window.addEventListener('storage', handleStorageChange);
 
     try {
       const savedProducts = localStorage.getItem('bj_products');
       if (savedProducts) {
-        const parsed = JSON.parse(savedProducts);
+        const parsed = JSON.parse(savedProducts as string);
         if (Array.isArray(parsed) && parsed.length > 0) {
           const mergedProducts = INITIAL_PRODUCTS.map(initProd => {
             const savedProd = parsed.find((p: any) => p.id === initProd.id);
@@ -162,7 +179,7 @@ const AppContent: React.FC = () => {
     // 2. Extended Hydration (Cart, Lang, Coupon, Stack)
     try {
       const savedCart = localStorage.getItem('bj_cart');
-      if (savedCart) setCart(JSON.parse(savedCart));
+      if (savedCart) setCart(JSON.parse(savedCart as string));
     } catch (e) { console.error("Failed to load cart", e); }
 
     try {
@@ -173,7 +190,7 @@ const AppContent: React.FC = () => {
     try {
       const savedStack = localStorage.getItem('bj_view_stack');
       if (savedStack) {
-        const parsedStack = JSON.parse(savedStack);
+        const parsedStack = JSON.parse(savedStack as string);
         if (Array.isArray(parsedStack) && parsedStack.length > 0) {
           setViewStack(parsedStack);
         }
@@ -182,8 +199,12 @@ const AppContent: React.FC = () => {
 
     try {
       const savedCoupon = localStorage.getItem('bj_coupon');
-      if (savedCoupon) setAppliedCoupon(JSON.parse(savedCoupon));
+      if (savedCoupon) setAppliedCoupon(JSON.parse(savedCoupon as string));
     } catch (e) { console.error("Failed to load coupon", e); }
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   // --- PERSISTENCE OBSERVERS ---
@@ -1015,7 +1036,7 @@ const AppContent: React.FC = () => {
             <button onClick={goBack} className="flex items-center gap-2 text-orange-900 mb-6 font-black uppercase text-sm tracking-widest"><ArrowLeft size={18} /> {t.back}</button>
             <h1 className="hindi-font text-4xl sm:text-6xl font-black text-orange-950 mb-8 sm:mb-12">{t.cart}</h1>
             {cart.length === 0 ? (
-              <div className="text-center py-16 sm:py-32 bg-white rounded-3xl border border-dashed border-orange-100 shadow-sm"><p className="text-stone-400 font-bold text-lg mb-8">Your cart is empty</p><button onClick={() => setView('HOME')} className="bg-orange-800 text-white px-10 py-4 rounded-xl font-black shadow-md">Start Shopping</button></div>
+              <div className="text-center py-16 sm:py-32 bg-white rounded-3xl border border-dashed border-orange-100 shadow-sm"><p className="text-stone-400 font-bold text-lg mb-8">{t.cartEmpty}</p><button onClick={() => setView('HOME')} className="bg-orange-800 text-white px-10 py-4 rounded-xl font-black shadow-md">{t.startShopping}</button></div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-4">
@@ -1032,26 +1053,26 @@ const AppContent: React.FC = () => {
                   ))}
                 </div>
                 <div className="bg-orange-950 text-white p-8 rounded-3xl shadow-xl h-fit">
-                  <h3 className="text-stone-400 text-sm font-black uppercase tracking-widest mb-6">Order Summary</h3>
+                  <h3 className="text-stone-400 text-sm font-black uppercase tracking-widest mb-6">{t.orderSummary}</h3>
                   <div className="space-y-3 mb-8">
-                    <div className="flex justify-between text-base"><span>Subtotal</span><span className="font-bold">₹{cartSubtotal}</span></div>
+                    <div className="flex justify-between text-base"><span>{t.subtotal}</span><span className="font-bold">₹{cartSubtotal}</span></div>
 
                     {/* Discount Line */}
                     {cartValues.bulkDiscount > 0 && (
                       <div className="flex justify-between text-base text-green-400 animate-pulse">
-                        <span>1kg Pack Savings (10%)</span>
+                        <span>{t.bulkSavings} (10% on 1kg)</span>
                         <span className="font-bold">-₹{cartValues.bulkDiscount}</span>
                       </div>
                     )}
                     {cartValues.couponDiscount > 0 && (
                       <div className="flex justify-between text-base text-green-400">
-                        <span>Coupon ({appliedCoupon?.code})</span>
+                        <span>{t.coupon} ({appliedCoupon?.code})</span>
                         <span className="font-bold">-₹{cartValues.couponDiscount}</span>
                       </div>
                     )}
 
                     <div className="flex justify-between text-base">
-                      <span>Delivery</span>
+                      <span>{t.deliveryCharges}</span>
                       {cartValues.isFreeDelivery ? (
                         <span className="font-bold text-green-400">FREE (Orders &gt; ₹499)</span>
                       ) : (
@@ -1060,14 +1081,14 @@ const AppContent: React.FC = () => {
                     </div>
 
                     <div className="pt-4 border-t border-white/10 flex justify-between text-2xl font-black text-amber-500">
-                      <span>Total</span>
+                      <span>{t.total}</span>
                       <span>₹{cartValues.finalTotal}</span>
                     </div>
                   </div>
                   {cartValues.bulkDiscount === 0 && (
-                    <p className="text-xs text-stone-400 mb-4 text-center">Tip: Get 10% OFF on 1kg packs!</p>
+                    <p className="text-xs text-stone-400 mb-4 text-center">{t.tipBulk}</p>
                   )}
-                  <button onClick={() => navigate('CHECKOUT')} className="w-full bg-white text-orange-950 py-4 rounded-xl font-black shadow-lg active:scale-95 transition-all">Checkout</button>
+                  <button onClick={() => navigate('CHECKOUT')} className="w-full bg-white text-orange-950 py-4 rounded-xl font-black shadow-lg active:scale-95 transition-all">{t.checkout}</button>
                 </div>
               </div>
             )}
@@ -1079,13 +1100,13 @@ const AppContent: React.FC = () => {
             <button onClick={goBack} className="flex items-center gap-2 text-orange-900 mb-6 font-black uppercase text-sm tracking-widest"><ArrowLeft size={18} /> {t.back}</button>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-20">
               <div className="space-y-8">
-                <div><h1 className="hindi-font text-4xl sm:text-6xl font-black text-orange-950 mb-4">{t.checkout}</h1><p className="text-stone-500 font-bold">Complete your order details below</p></div>
+                <div><h1 className="hindi-font text-4xl sm:text-6xl font-black text-orange-950 mb-4">{t.checkout}</h1><p className="text-stone-500 font-bold">{t.completeDetails}</p></div>
                 <div className="bg-white p-6 sm:p-10 rounded-3xl border border-orange-100 shadow-xl space-y-6 sm:space-y-8">
                   <div className="space-y-4">
                     <h3 className="hindi-font text-xl sm:text-2xl font-black text-orange-900 flex items-center gap-2"><MapPin size={24} /> {t.address}</h3>
                     <input type="text" placeholder={t.name} className="w-full p-4 sm:p-5 bg-stone-50 rounded-xl border border-orange-50 outline-none focus:border-orange-500 font-bold" id="c-name" defaultValue={user?.name} required />
                     <input type="text" placeholder={t.address} className="w-full p-4 sm:p-5 bg-stone-50 rounded-xl border border-orange-50 outline-none focus:border-orange-500 font-bold" id="c-addr" required />
-                    <div className="grid grid-cols-2 gap-4"><input type="text" placeholder="City (Prayagraj)" className="w-full p-4 sm:p-5 bg-stone-50 rounded-xl border border-orange-50 outline-none focus:border-orange-500 font-bold" defaultValue="Prayagraj" readOnly /><input type="text" placeholder="Pincode" className="w-full p-4 sm:p-5 bg-stone-50 rounded-xl border border-orange-50 outline-none focus:border-orange-500 font-bold" id="c-pin" required /></div>
+                    <div className="grid grid-cols-2 gap-4"><input type="text" placeholder={t.cityPlaceholder} className="w-full p-4 sm:p-5 bg-stone-50 rounded-xl border border-orange-50 outline-none focus:border-orange-500 font-bold" defaultValue="Prayagraj" readOnly /><input type="text" placeholder={t.pincodePlaceholder} className="w-full p-4 sm:p-5 bg-stone-50 rounded-xl border border-orange-50 outline-none focus:border-orange-500 font-bold" id="c-pin" required /></div>
                     <input
                       type="tel"
                       placeholder={t.phone}
@@ -1098,7 +1119,7 @@ const AppContent: React.FC = () => {
                   </div>
 
                   <div className="space-y-4 pt-6 sm:pt-8 border-t border-dashed border-orange-100">
-                    <h3 className="font-black text-stone-400 uppercase tracking-widest mb-6 text-sm">Order Preview</h3>
+                    <h3 className="font-black text-stone-400 uppercase tracking-widest mb-6 text-sm">{t.orderPreview}</h3>
                     <div className="space-y-4 mb-6">
                       {cart.map((item, i) => (
                         <div key={i} className="flex justify-between items-center text-base sm:text-lg font-bold text-stone-600 border-b border-stone-200 pb-2">
@@ -1110,16 +1131,16 @@ const AppContent: React.FC = () => {
 
 
                     <div className="space-y-2 mb-4 text-sm font-bold text-stone-500 border-t border-dashed border-stone-200 pt-4">
-                      <div className="flex justify-between"><span>Subtotal</span><span>₹{cartSubtotal}</span></div>
+                      <div className="flex justify-between"><span>{t.subtotal}</span><span>₹{cartSubtotal}</span></div>
 
                       <div className="flex justify-between">
-                        <span>Delivery Charges</span>
+                        <span>{t.deliveryCharges}</span>
                         {cartValues.isFreeDelivery ? <span className="text-green-600">FREE</span> : <span>₹50</span>}
                       </div>
 
                       {cartValues.bulkDiscount > 0 && (
                         <div className="flex justify-between text-green-600">
-                          <span>Bulk Savings (10% on 1kg)</span>
+                          <span>{t.bulkSavings} (10% on 1kg)</span>
                           <span>-₹{cartValues.bulkDiscount}</span>
                         </div>
                       )}
@@ -1127,7 +1148,7 @@ const AppContent: React.FC = () => {
                       {cartValues.couponDiscount > 0 && (
                         <div className="flex justify-between text-green-600 items-center">
                           <div className="flex items-center gap-2">
-                            <span>Coupon ({appliedCoupon?.code})</span>
+                            <span>{t.coupon} ({appliedCoupon?.code})</span>
                             <button onClick={() => { setAppliedCoupon(null); }} className="bg-red-50 text-red-500 text-[10px] font-black uppercase px-2 py-0.5 rounded hover:bg-red-100 transition-colors">Remove</button>
                           </div>
                           <span>-₹{cartValues.couponDiscount}</span>
@@ -1135,48 +1156,81 @@ const AppContent: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="flex justify-between items-center text-2xl font-black text-orange-950 pt-4 border-t-2 border-stone-200"><span>Total</span><span>₹{cartValues.finalTotal}</span></div>
+                    <div className="flex justify-between items-center text-2xl font-black text-orange-950 pt-4 border-t-2 border-stone-200"><span>{t.total}</span><span>₹{cartValues.finalTotal}</span></div>
                   </div>
                 </div>
               </div>
 
               <div className="bg-stone-50 p-6 sm:p-10 rounded-3xl h-fit border border-stone-100">
-                <h3 className="hindi-font text-xl sm:text-2xl font-black text-orange-900 flex items-center gap-2 mb-6"><QrCode size={24} /> Pay via App</h3>
+                <h3 className="hindi-font text-xl sm:text-2xl font-black text-orange-900 flex items-center gap-2 mb-6"><QrCode size={24} /> {t.scanToPay}</h3>
 
-                <div className="space-y-6">
-                  <div className="bg-orange-50 p-6 rounded-2xl border-2 border-orange-100 text-center">
-                    <p className="font-bold text-orange-800 mb-4 text-sm uppercase tracking-widest">Select your UPI App to Pay</p>
+                {/* QR Code Section */}
+                <div className="bg-white p-6 rounded-2xl border-2 border-stone-100 mb-8 flex flex-col items-center text-center">
+                  <div className="bg-white p-2 rounded-xl shadow-lg border border-stone-100 mb-4 inline-block">
+                    <img src={paymentQr} alt="Payment QR" className="w-48 h-48 object-contain rounded-lg" />
+                  </div>
+                  <p className="font-bold text-stone-800 text-sm uppercase tracking-widest mb-1">{t.scanToPay}</p>
+                  <p className="text-xs text-stone-500 font-medium">Bhojnamrit Foods</p>
 
-                    <div className="grid grid-cols-1 gap-4">
-                      {/* Paytm Button */}
-                      <a
-                        href={`upi://pay?pa=9555809329@pthdfc&pn=BabajiAchar&am=${cartValues.finalTotal}&tn=Order for ${user?.name || 'Guest'}&cu=INR`}
-                        className="bg-white border-2 border-stone-200 hover:border-[#00BAF2] p-4 rounded-xl flex items-center justify-center gap-3 shadow-sm transition-all active:scale-95 group"
-                      >
-                        <span className="font-black text-[#00BAF2] text-xl">Paytm</span>
-                        <span className="bg-[#00BAF2] text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Fast</span>
-                      </a>
+                  <div className="w-full h-px bg-stone-100 my-4"></div>
 
-                      {/* PhonePe Button */}
-                      <a
-                        href={`upi://pay?pa=9555809329@ybl&pn=BabajiAchar&am=${cartValues.finalTotal}&tn=Order for ${user?.name || 'Guest'}&cu=INR`}
-                        className="bg-white border-2 border-stone-200 hover:border-[#5f259f] p-4 rounded-xl flex items-center justify-center gap-3 shadow-sm transition-all active:scale-95"
-                      >
-                        <span className="font-black text-[#5f259f] text-xl">PhonePe</span>
-                      </a>
-
-                      {/* GPay Button - Updated to reliable VPA */}
-                      <a
-                        href={`upi://pay?pa=9555809329@ybl&pn=BabajiAchar&am=${cartValues.finalTotal}&tn=Order for ${user?.name || 'Guest'}&cu=INR`}
-                        className="bg-white border-2 border-stone-200 hover:border-[#EA4335] p-4 rounded-xl flex items-center justify-center gap-3 shadow-sm transition-all active:scale-95"
-                      >
-                        <span className="font-black text-stone-600 text-xl group-hover:text-[#EA4335]"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">P</span><span className="text-[#FBBC05]">a</span><span className="text-[#34A853]">y</span></span>
-                      </a>
+                  {/* Manual Copy Section */}
+                  <div className="w-full space-y-3">
+                    <div className="flex items-center justify-between bg-stone-50 p-3 rounded-xl border border-stone-200">
+                      <div className="text-left">
+                        <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">{t.mobileNo}</span>
+                        <span className="font-mono font-bold text-stone-800">9555809329</span>
+                      </div>
+                      <button onClick={() => { navigator.clipboard.writeText('9555809329'); addToast('Copied Number!', 'info'); }} className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"><Copy size={16} /></button>
                     </div>
+                    <div className="flex items-center justify-between bg-stone-50 p-3 rounded-xl border border-stone-200">
+                      <div className="text-left">
+                        <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">{t.upiId}</span>
+                        <span className="font-mono font-bold text-stone-800 text-sm truncate max-w-[150px]">ish29102003@okicici</span>
+                      </div>
+                      <button onClick={() => { navigator.clipboard.writeText('ish29102003@okicici'); addToast('Copied UPI ID!', 'info'); }} className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"><Copy size={16} /></button>
+                    </div>
+                  </div>
+                </div>
 
-                    <p className="text-xs text-stone-400 font-bold mt-6">
-                      * You will be redirected to the app to complete payment.
-                    </p>
+                {/* Direct App Links - REMOVED AMOUNT PARAMETER */}
+                <div className="grid grid-cols-1 gap-3 mb-8">
+                  <p className="font-bold text-stone-800 text-sm uppercase tracking-widest text-center mb-2">{t.orPayViaApp}</p>
+                  {/* Paytm */}
+                  <a href={`upi://pay?pa=ish29102003@okicici&pn=BhojnamritFoods&tn=Order ${user?.name}&cu=INR`} className="bg-white border-2 border-stone-200 hover:border-[#00BAF2] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
+                    <span className="font-black text-[#00BAF2] text-lg">{t.paytm}</span>
+                  </a>
+                  {/* PhonePe */}
+                  <a href={`upi://pay?pa=ish29102003@okicici&pn=BhojnamritFoods&tn=Order ${user?.name}&cu=INR`} className="bg-white border-2 border-stone-200 hover:border-[#5f259f] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
+                    <span className="font-black text-[#5f259f] text-lg">{t.phonepe}</span>
+                  </a>
+                  {/* GPay */}
+                  <a href={`upi://pay?pa=ish29102003@okicici&pn=BhojnamritFoods&tn=Order ${user?.name}&cu=INR`} className="bg-white border-2 border-stone-200 hover:border-[#EA4335] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
+                    <span className="font-black text-stone-600 text-lg"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">P</span><span className="text-[#FBBC05]">a</span><span className="text-[#34A853]">y</span></span>
+                  </a>
+                </div>
+
+                {/* Payment Verification Form */}
+                <div className="bg-orange-50 p-6 rounded-2xl border-2 border-orange-100 mb-8">
+                  <h4 className="font-bold text-orange-900 mb-4 flex items-center gap-2"><ShieldCheck size={18} /> {t.paymentVerification}</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-orange-800 mb-1 ml-1 uppercase">{t.txnId}</label>
+                      <input type="text" id="txn-id" placeholder={t.txnPlaceholder} className="w-full bg-white border border-orange-200 text-stone-900 rounded-xl px-4 py-3 font-medium outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all placeholder-stone-400" />
+                      <p className="text-[10px] text-orange-700/70 mt-1 ml-1 font-medium">{t.txnRequired}</p>
+                    </div>
+                  </div>
+
+                  {/* Whatsapp Screenshot Button */}
+                  <div className="mt-4 pt-4 border-t border-orange-200/50">
+                    <p className="text-[10px] text-orange-800 font-bold mb-2 text-center">{t.screenshotNote}</p>
+                    <button onClick={() => {
+                      const name = (document.getElementById('c-name') as HTMLInputElement).value || 'Guest';
+                      const msg = `Namaste! I want to share payment screenshot for my order. Name: ${name}. Total: ₹${cartValues.finalTotal}`;
+                      window.open(`https://wa.me/${BRAND_CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+                    }} className="w-full bg-white border border-green-500 text-green-600 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-green-50 transition-colors">
+                      <WhatsAppIcon size={16} /> {t.sendScreenshot}
+                    </button>
                   </div>
                 </div>
 
@@ -1185,27 +1239,46 @@ const AppContent: React.FC = () => {
                   const addr = (document.getElementById('c-addr') as HTMLInputElement).value;
                   const pin = (document.getElementById('c-pin') as HTMLInputElement).value;
                   const phone = (document.getElementById('c-phone') as HTMLInputElement).value;
+                  const txnId = (document.getElementById('txn-id') as HTMLInputElement).value;
 
-                  if (!name || !addr || !pin || !phone) return alert("Please fill all details");
+                  if (!name || !addr || !pin || !phone) return alert("Please fill all Shipping details (Name, Address, Pincode, Phone)");
+                  if (phone.length !== 10) return alert("Please enter a valid 10-digit phone number");
 
-                  // Random 6-digit Order ID
+                  // Allow empty UTR if they opted to send screenshot (User Logic: "or send screenshot")
+                  // But to keep it consistent, we mark UTR as 'SCREENSHOT_SENT' if empty
+                  let finalUtr = txnId;
+                  if (!finalUtr || finalUtr.length < 4) {
+                    const confirmScreenshot = confirm("Did you send the screenshot on WhatsApp? Click OK to confirm order.");
+                    if (!confirmScreenshot) return;
+                    finalUtr = 'SCREENSHOT_SENT';
+                  }
+
+                  // Generate Order
                   const randomOrderId = Math.floor(100000 + Math.random() * 900000);
                   const newOrder: Order = {
-                    id: `Order #${randomOrderId}`,
+                    id: `Order #${randomOrderId}`, // Use Payment ID fragment
                     date: new Date().toISOString(),
-                    status: 'Pending_Payment',
+                    status: 'Pending_Verification',
                     items: cart,
                     totalAmount: cartValues.finalTotal,
                     customerDetails: { fullName: name, phone, street: addr, city: 'Prayagraj', state: 'UP', pincode: pin },
-                    paymentMethod: 'UPI',
-                    utrNumber: 'UPI_APP_REDIRECT'
+                    paymentMethod: 'UPI (Manual)',
+                    utrNumber: finalUtr
                   };
-                  setOrders([newOrder, ...orders]);
-                  localStorage.setItem('bj_orders', JSON.stringify([newOrder, ...orders]));
+
+                  const updatedOrders = [newOrder, ...orders];
+                  setOrders(updatedOrders);
+                  localStorage.setItem('bj_orders', JSON.stringify(updatedOrders));
                   setCurrentOrder(newOrder);
                   setCart([]);
+
+                  // Trigger WhatsApp with Manual context
+                  WhatsAppService.sendOrderConfirmation(newOrder);
                   navigate('SUCCESS');
-                }} className="w-full bg-orange-800 text-white py-5 rounded-2xl font-black text-xl shadow-xl hover:bg-orange-950 transition-all active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap mt-8">Step 2: Paid in App? Place Order <CheckCircle2 size={24} /></button>
+
+                }} className="w-full bg-[#25D366] text-white py-5 rounded-2xl font-black text-xl shadow-xl hover:bg-[#128C7E] transition-all active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap shadow-[#25D366]/30">
+                  {t.confirmOrder} <CheckCircle2 size={24} />
+                </button>
               </div>
             </div>
           </div>
@@ -1317,6 +1390,11 @@ const AppContent: React.FC = () => {
           />
         )}
 
+        {/* Legal Pages */}
+        {(view === 'PRIVACY' || view === 'REFUND' || view === 'TERMS' || view === 'DISCLAIMER') && (
+          <LegalPage type={view} onBack={() => setView('HOME')} />
+        )}
+
       </main>
 
       {/* Footer */}
@@ -1378,36 +1456,19 @@ const AppContent: React.FC = () => {
               </ul>
             </div>
 
-            {/* Column 2: Our Promise */}
+            {/* Column 2: Legal & Policy */}
             <div className="flex flex-col w-full border-l border-stone-800/30 pl-4 sm:pl-10 lg:pl-12">
               <h4 className="flex items-center gap-2 sm:gap-4 text-amber-100 font-extrabold uppercase tracking-[0.15em] sm:tracking-[0.25em] text-[8px] sm:text-xs mb-8 whitespace-nowrap">
                 <span className="h-px bg-stone-800/60 flex-grow min-w-[10px] sm:max-w-[40px]"></span>
-                <span className="shrink-0">OUR PROMISE</span>
+                <span className="shrink-0">LEGAL</span>
                 <span className="h-px bg-stone-800/60 flex-grow"></span>
               </h4>
-              <div className="space-y-6">
-                <div className="flex items-start gap-3 sm:gap-4 group">
-                  <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-orange-950/20 border border-orange-800/30 flex items-center justify-center text-orange-500 shrink-0 group-hover:border-orange-500 transition-colors"><Shield size={14} className="sm:w-[18px] sm:h-[18px]" /></div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-stone-100 font-black text-[9px] sm:text-sm uppercase leading-tight mb-0.5 sm:mb-1 truncate">100% Organic</span>
-                    <p className="text-stone-400 text-[8px] sm:text-[11px] font-bold leading-tight sm:leading-relaxed line-clamp-2">No synthetic chemicals used.</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 sm:gap-4 group">
-                  <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-amber-950/20 border border-amber-800/30 flex items-center justify-center text-amber-500 shrink-0 group-hover:border-amber-500 transition-colors"><Sparkles size={14} className="sm:w-[18px] sm:h-[18px]" /></div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-stone-100 font-black text-[9px] sm:text-sm uppercase leading-tight mb-0.5 sm:mb-1 truncate">Heritage Recipe</span>
-                    <p className="text-stone-400 text-[8px] sm:text-[11px] font-bold leading-tight sm:leading-relaxed line-clamp-2">Traditional preparation methods.</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 sm:gap-4 group">
-                  <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-green-950/20 border border-green-800/30 flex items-center justify-center text-green-500 shrink-0 group-hover:border-green-500 transition-colors"><Leaf size={14} className="sm:w-[18px] sm:h-[18px]" /></div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-stone-100 font-black text-[9px] sm:text-sm uppercase leading-tight mb-0.5 sm:mb-1 truncate">Handmade</span>
-                    <p className="text-stone-400 text-[8px] sm:text-[11px] font-bold leading-tight sm:leading-relaxed line-clamp-2">Small batches for flavor.</p>
-                  </div>
-                </div>
-              </div>
+              <ul className="space-y-3 sm:space-y-4 text-sm sm:text-base font-bold text-stone-400">
+                <li className="hover:text-amber-400 transition-colors cursor-pointer" onClick={() => setView('PRIVACY')}>Privacy Policy</li>
+                <li className="hover:text-amber-400 transition-colors cursor-pointer" onClick={() => setView('REFUND')}>Refund Policy</li>
+                <li className="hover:text-amber-400 transition-colors cursor-pointer" onClick={() => setView('TERMS')}>Terms & Conditions</li>
+                <li className="hover:text-amber-400 transition-colors cursor-pointer" onClick={() => setView('DISCLAIMER')}>Disclaimer</li>
+              </ul>
             </div>
 
             {/* Column 3: Keep in Touch */}
