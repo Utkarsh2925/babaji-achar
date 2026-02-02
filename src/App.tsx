@@ -251,8 +251,10 @@ const AppContent: React.FC = () => {
       const lastView: any = newStack[newStack.length - 1];
       setViewStack(newStack);
       setView(lastView);
+      window.scrollTo(0, 0);
     } else {
       setView('HOME');
+      window.scrollTo(0, 0);
     }
   };
 
@@ -1027,7 +1029,6 @@ const AppContent: React.FC = () => {
         {view === 'CART' && (
           <div className="max-w-4xl mx-auto px-4 py-8 sm:py-16 animate-in fade-in duration-500">
             <button onClick={goBack} className="flex items-center gap-2 text-orange-900 mb-6 font-black uppercase text-sm tracking-widest"><ArrowLeft size={18} /> {t.back}</button>
-            <button onClick={goBack} className="flex items-center gap-2 text-orange-900 mb-6 font-black uppercase text-sm tracking-widest"><ArrowLeft size={18} /> {t.back}</button>
             <h1 className="hindi-font text-4xl sm:text-6xl font-black text-orange-950 mb-8 sm:mb-12">{t.cart}</h1>
             {cart.length === 0 ? (
               <div className="text-center py-16 sm:py-32 bg-white rounded-3xl border border-dashed border-orange-100 shadow-sm"><p className="text-stone-400 font-bold text-lg mb-8">{t.cartEmpty}</p><button onClick={() => setView('HOME')} className="bg-orange-800 text-white px-10 py-4 rounded-xl font-black shadow-md">{t.startShopping}</button></div>
@@ -1173,16 +1174,16 @@ const AppContent: React.FC = () => {
                     <div className="flex items-center justify-between bg-stone-50 p-3 rounded-xl border border-stone-200">
                       <div className="text-left">
                         <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">{t.mobileNo}</span>
-                        <span className="font-mono font-bold text-stone-800">9555809329</span>
+                        <span className="font-mono font-bold text-stone-800">7754865997</span>
                       </div>
-                      <button onClick={() => { navigator.clipboard.writeText('9555809329'); addToast('Copied Number!', 'info'); }} className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"><Copy size={16} /></button>
+                      <button onClick={() => { navigator.clipboard.writeText('7754865997'); addToast('Copied Number!', 'info'); }} className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"><Copy size={16} /></button>
                     </div>
                     <div className="flex items-center justify-between bg-stone-50 p-3 rounded-xl border border-stone-200">
                       <div className="text-left">
                         <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">{t.upiId}</span>
-                        <span className="font-mono font-bold text-stone-800 text-sm truncate max-w-[150px]">ish29102003@okicici</span>
+                        <span className="font-mono font-bold text-stone-800 text-sm truncate max-w-[150px]">7754865997@kotak811</span>
                       </div>
-                      <button onClick={() => { navigator.clipboard.writeText('ish29102003@okicici'); addToast('Copied UPI ID!', 'info'); }} className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"><Copy size={16} /></button>
+                      <button onClick={() => { navigator.clipboard.writeText('7754865997@kotak811'); addToast('Copied UPI ID!', 'info'); }} className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"><Copy size={16} /></button>
                     </div>
                   </div>
                 </div>
@@ -1191,15 +1192,15 @@ const AppContent: React.FC = () => {
                 <div className="grid grid-cols-1 gap-3 mb-8">
                   <p className="font-bold text-stone-800 text-sm uppercase tracking-widest text-center mb-2">{t.orPayViaApp}</p>
                   {/* Paytm */}
-                  <a href={`upi://pay?pa=ish29102003@okicici&pn=BhojnamritFoods&tn=Order ${user?.name}&cu=INR`} className="bg-white border-2 border-stone-200 hover:border-[#00BAF2] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
+                  <a href={`upi://pay?pa=7754865997@kotak811&pn=BhojnamritFoods&tn=Order ${user?.name}&cu=INR`} className="bg-white border-2 border-stone-200 hover:border-[#00BAF2] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
                     <span className="font-black text-[#00BAF2] text-lg">{t.paytm}</span>
                   </a>
                   {/* PhonePe */}
-                  <a href={`upi://pay?pa=ish29102003@okicici&pn=BhojnamritFoods&tn=Order ${user?.name}&cu=INR`} className="bg-white border-2 border-stone-200 hover:border-[#5f259f] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
+                  <a href={`upi://pay?pa=7754865997@kotak811&pn=BhojnamritFoods&tn=Order ${user?.name}&cu=INR`} className="bg-white border-2 border-stone-200 hover:border-[#5f259f] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
                     <span className="font-black text-[#5f259f] text-lg">{t.phonepe}</span>
                   </a>
                   {/* GPay */}
-                  <a href={`upi://pay?pa=ish29102003@okicici&pn=BhojnamritFoods&tn=Order ${user?.name}&cu=INR`} className="bg-white border-2 border-stone-200 hover:border-[#EA4335] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
+                  <a href={`upi://pay?pa=7754865997@kotak811&pn=BhojnamritFoods&tn=Order ${user?.name}&cu=INR`} className="bg-white border-2 border-stone-200 hover:border-[#EA4335] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
                     <span className="font-black text-stone-600 text-lg"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">P</span><span className="text-[#FBBC05]">a</span><span className="text-[#34A853]">y</span></span>
                   </a>
                 </div>
