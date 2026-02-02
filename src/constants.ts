@@ -331,7 +331,8 @@ export const UI_TEXT = {
         coupon: "कूपन",
         // New Instructions
         paymentInstructionHeader: "भुगतान निर्देश (Payment Instructions)",
-        paymentInstructionBody: "बैंकिंग सुरक्षा नियमों के कारण, ऐप लिंक राशि ऑटो-फिल नहीं करेंगे। कृपया हमारा नंबर/UPI कॉपी करें और ऐप में मैन्युअल रूप से दर्ज करके भुगतान करें।",
+        paymentInstructionBody: "कृपया मोबाइल नंबर 9555809329 पर भुगतान करें। भुगतान करने से पहले नाम 'Utkarsh' सत्यापित करें। नीचे दिए गए ऐप लिंक केवल ऐप खोलने के लिए हैं।",
+        paymentCheckbox: "मैंने अपना भुगतान पूरा कर लिया है, और मैं भुगतान के प्रमाण के रूप में स्क्रीनशॉट साझा करूंगा।",
     },
     en: {
         home: "Home", shop: "Shop", cart: "Cart", checkout: "Checkout", back: "Back", add: "Add to Cart",
@@ -362,6 +363,7 @@ export const UI_TEXT = {
         coupon: "Coupon",
         // New Instructions
         paymentInstructionHeader: "Payment Instructions",
-        paymentInstructionBody: "Due to banking security rules, App Links will NOT auto-fill the amount. Please COPY our Number/UPI and manually enter it in the App to pay.",
+        paymentInstructionBody: "Pay on Mobile No: 9555809329. Verify Name: 'Utkarsh' before paying. App links below are for quick launch only.",
+        paymentCheckbox: "I have completed my payment, and I will share screenshot as proof of payment.",
     }
 };

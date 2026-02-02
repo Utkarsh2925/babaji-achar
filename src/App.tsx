@@ -1157,35 +1157,26 @@ const AppContent: React.FC = () => {
               </div>
 
               <div className="bg-stone-50 p-6 sm:p-10 rounded-3xl h-fit border border-stone-100">
-                <h3 className="hindi-font text-xl sm:text-2xl font-black text-orange-900 flex items-center gap-2 mb-6"><QrCode size={24} /> {t.scanToPay}</h3>
+                <h3 className="hindi-font text-xl sm:text-2xl font-black text-orange-900 flex items-center gap-2 mb-6"><ShieldCheck size={24} /> {t.scanToPay}</h3>
 
-                {/* QR Code Section */}
-                <div className="bg-white p-6 rounded-2xl border-2 border-stone-100 mb-8 flex flex-col items-center text-center">
-                  <div className="bg-white p-2 rounded-xl shadow-lg border border-stone-100 mb-4 inline-block">
-                    <img src={paymentQr} alt="Payment QR" className="w-48 h-48 object-contain rounded-lg" />
+                {/* Instruction Block (Replaces QR) */}
+                <div className="bg-white p-6 rounded-2xl border-2 border-stone-100 mb-8 text-center shadow-sm">
+                  <div className="bg-orange-50 p-4 rounded-xl border border-orange-200 mb-6">
+                    <p className="text-orange-900 font-bold text-sm mb-2 uppercase tracking-widest"><AlertCircle size={16} className="inline mr-1" /> {t.paymentInstructionHeader}</p>
+                    <p className="text-sm text-stone-700 leading-relaxed font-bold">
+                      {t.paymentInstructionBody}
+                    </p>
                   </div>
-                  <p className="font-bold text-stone-800 text-sm uppercase tracking-widest mb-1">{t.scanToPay}</p>
-                  <p className="text-xs text-stone-500 font-medium">Bhojnamrit Foods</p>
 
-                  <div className="w-full h-px bg-stone-100 my-4"></div>
-
-                  {/* Manual Copy Section */}
-                  <div className="w-full space-y-3">
-                    <div className="flex items-center justify-between bg-stone-50 p-3 rounded-xl border border-stone-200">
-                      <div className="text-left">
-                        <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">{t.mobileNo}</span>
-                        <span className="font-mono font-bold text-stone-800">7754865997</span>
-                      </div>
-                      <button onClick={() => { navigator.clipboard.writeText('7754865997'); addToast('Copied Number!', 'info'); }} className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"><Copy size={16} /></button>
+                  {/* Mobile Number Only */}
+                  <div className="flex items-center justify-between bg-stone-50 p-4 rounded-xl border border-stone-200 mb-2">
+                    <div className="text-left">
+                      <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">{t.mobileNo}</span>
+                      <span className="font-mono font-bold text-stone-800 text-lg">9555809329</span>
                     </div>
-                    <div className="flex items-center justify-between bg-stone-50 p-3 rounded-xl border border-stone-200">
-                      <div className="text-left">
-                        <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">{t.upiId}</span>
-                        <span className="font-mono font-bold text-stone-800 text-sm truncate max-w-[150px]">7754865997@kotak811</span>
-                      </div>
-                      <button onClick={() => { navigator.clipboard.writeText('7754865997@kotak811'); addToast('Copied UPI ID!', 'info'); }} className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"><Copy size={16} /></button>
-                    </div>
+                    <button onClick={() => { navigator.clipboard.writeText('9555809329'); addToast('Copied Number!', 'info'); }} className="p-3 text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors font-bold text-xs uppercase tracking-wider">Copy</button>
                   </div>
+                  <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mt-2">* Verify Name: Utkarsh</p>
                 </div>
 
                 {/* Direct App Links - RESTORED (App Redirect Only - No Auto Fill) */}
@@ -1200,40 +1191,17 @@ const AppContent: React.FC = () => {
                     <span className="font-black text-[#5f259f] text-lg">{t.phonepe}</span>
                   </a>
                   {/* GPay - Generic Launch */}
-                  <a href="tez://" className="bg-white border-2 border-stone-200 hover:border-[#EA4335] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
+                  <a href="gpay://" className="bg-white border-2 border-stone-200 hover:border-[#EA4335] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
                     <span className="font-black text-stone-600 text-lg"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">P</span><span className="text-[#FBBC05]">a</span><span className="text-[#34A853]">y</span></span>
                   </a>
                 </div>
 
-                <div className="bg-orange-50 p-4 rounded-xl border border-orange-200 mb-8 text-center">
-                  <p className="text-orange-900 font-bold text-sm mb-2"><AlertCircle size={16} className="inline mr-1" /> {t.paymentInstructionHeader}</p>
-                  <p className="text-xs text-stone-600 leading-relaxed font-medium">
-                    {t.paymentInstructionBody}
-                  </p>
-                </div>
-
-                {/* Payment Verification Form */}
-                <div className="bg-orange-50 p-6 rounded-2xl border-2 border-orange-100 mb-8">
-                  <h4 className="font-bold text-orange-900 mb-4 flex items-center gap-2"><ShieldCheck size={18} /> {t.paymentVerification}</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-orange-800 mb-1 ml-1 uppercase">{t.txnId}</label>
-                      <input type="text" id="txn-id" placeholder={t.txnPlaceholder} className="w-full bg-white border border-orange-200 text-stone-900 rounded-xl px-4 py-3 font-medium outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all placeholder-stone-400" />
-                      <p className="text-[10px] text-orange-700/70 mt-1 ml-1 font-medium">{t.txnRequired}</p>
-                    </div>
-                  </div>
-
-                  {/* Whatsapp Screenshot Button */}
-                  <div className="mt-4 pt-4 border-t border-orange-200/50">
-                    <p className="text-[10px] text-orange-800 font-bold mb-2 text-center">{t.screenshotNote}</p>
-                    <button onClick={() => {
-                      const name = (document.getElementById('c-name') as HTMLInputElement).value || 'Guest';
-                      const msg = `Namaste! I want to share payment screenshot for my order. Name: ${name}. Total: ₹${cartValues.finalTotal}`;
-                      window.open(`https://wa.me/${BRAND_CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
-                    }} className="w-full bg-white border border-green-500 text-green-600 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-green-50 transition-colors">
-                      <WhatsAppIcon size={16} /> {t.sendScreenshot}
-                    </button>
-                  </div>
+                {/* Mandate Checkbox (Replaces UTR/Screenshot Form) */}
+                <div className="bg-orange-50 p-4 rounded-xl border border-orange-200 mb-8">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" id="payment-checkbox" className="mt-1 w-5 h-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300" />
+                    <span className="text-sm font-bold text-stone-700 leading-tight select-none pt-0.5">{t.paymentCheckbox}</span>
+                  </label>
                 </div>
 
                 <button onClick={() => {
@@ -1241,31 +1209,23 @@ const AppContent: React.FC = () => {
                   const addr = (document.getElementById('c-addr') as HTMLInputElement).value;
                   const pin = (document.getElementById('c-pin') as HTMLInputElement).value;
                   const phone = (document.getElementById('c-phone') as HTMLInputElement).value;
-                  const txnId = (document.getElementById('txn-id') as HTMLInputElement).value;
+                  const isChecked = (document.getElementById('payment-checkbox') as HTMLInputElement).checked;
 
                   if (!name || !addr || !pin || !phone) return alert("Please fill all Shipping details (Name, Address, Pincode, Phone)");
                   if (phone.length !== 10) return alert("Please enter a valid 10-digit phone number");
-
-                  // Allow empty UTR if they opted to send screenshot (User Logic: "or send screenshot")
-                  // But to keep it consistent, we mark UTR as 'SCREENSHOT_SENT' if empty
-                  let finalUtr = txnId;
-                  if (!finalUtr || finalUtr.length < 4) {
-                    const confirmScreenshot = confirm("Did you send the screenshot on WhatsApp? Click OK to confirm order.");
-                    if (!confirmScreenshot) return;
-                    finalUtr = 'SCREENSHOT_SENT';
-                  }
+                  if (!isChecked) return alert("Please confirm that you have completed the payment by checking the box.");
 
                   // Generate Order
                   const randomOrderId = Math.floor(100000 + Math.random() * 900000);
                   const newOrder: Order = {
-                    id: `Order #${randomOrderId}`, // Use Payment ID fragment
+                    id: `Order #${randomOrderId}`,
                     date: new Date().toISOString(),
                     status: 'Pending_Verification',
                     items: cart,
                     totalAmount: cartValues.finalTotal,
                     customerDetails: { fullName: name, phone, street: addr, city: 'Prayagraj', state: 'UP', pincode: pin },
-                    paymentMethod: 'UPI (Manual)',
-                    utrNumber: finalUtr
+                    paymentMethod: 'UPI (Manual - Checkbox Confirmed)',
+                    utrNumber: 'CHECKBOX_CONFIRMED'
                   };
 
                   const updatedOrders = [newOrder, ...orders];
