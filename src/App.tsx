@@ -1179,21 +1179,74 @@ const AppContent: React.FC = () => {
                   <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mt-2">* Verify Name: Utkarsh</p>
                 </div>
 
-                {/* Direct App Links - RESTORED (App Redirect Only - No Auto Fill) */}
+                {/* Universal Payment Redirect System */}
                 <div className="grid grid-cols-1 gap-3 mb-8">
                   <p className="font-bold text-stone-800 text-sm uppercase tracking-widest text-center mb-2">{t.orPayViaApp}</p>
-                  {/* Paytm */}
-                  <a href="paytmmp://" className="bg-white border-2 border-stone-200 hover:border-[#00BAF2] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
-                    <span className="font-black text-[#00BAF2] text-lg">{t.paytm}</span>
-                  </a>
-                  {/* PhonePe */}
-                  <a href="phonepe://" className="bg-white border-2 border-stone-200 hover:border-[#5f259f] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
-                    <span className="font-black text-[#5f259f] text-lg">{t.phonepe}</span>
-                  </a>
-                  {/* GPay - Android Intent Fallback */}
-                  <a href="intent://upi/#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end" className="bg-white border-2 border-stone-200 hover:border-[#EA4335] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95">
-                    <span className="font-black text-stone-600 text-lg"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">P</span><span className="text-[#FBBC05]">a</span><span className="text-[#34A853]">y</span></span>
-                  </a>
+
+                  {/* Payment Handler Logic */}
+                  {(() => {
+                    const handlePayment = (app: 'paytm' | 'phonepe' | 'gpay') => {
+                      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                      const isAndroid = /Android/i.test(navigator.userAgent);
+                      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+                      // Payment Details
+                      const vpa = '7754865997@kotak811';
+                      const name = 'Utkarsh'; // Verify Name
+                      const currency = 'INR';
+                      // Note: Amount (am) is OMITTED intentionally for Risk Policy compliance (No Auto-Fill)
+
+                      if (!isMobile) {
+                        // Desktop Fallback -> Official Websites
+                        if (app === 'paytm') window.open('https://paytm.com/', '_blank');
+                        if (app === 'phonepe') window.open('https://www.phonepe.com/', '_blank');
+                        if (app === 'gpay') window.open('https://pay.google.com/about/', '_blank');
+                        return;
+                      }
+
+                      // Mobile Redirection Logic
+                      let url = '';
+                      const baseUrl = `upi://pay?pa=${vpa}&pn=${name}&cu=${currency}`;
+
+                      if (isAndroid) {
+                        // Android Intents with Play Store Fallback
+                        if (app === 'paytm') {
+                          url = `intent://pay?pa=${vpa}&pn=${name}&cu=${currency}#Intent;scheme=upi;package=net.one97.paytm;S.browser_fallback_url=https://play.google.com/store/apps/details?id=net.one97.paytm;end`;
+                        } else if (app === 'phonepe') {
+                          url = `intent://pay?pa=${vpa}&pn=${name}&cu=${currency}#Intent;scheme=upi;package=com.phonepe.app;S.browser_fallback_url=https://play.google.com/store/apps/details?id=com.phonepe.app;end`;
+                        } else if (app === 'gpay') {
+                          url = `intent://pay?pa=${vpa}&pn=${name}&cu=${currency}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;S.browser_fallback_url=https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user;end`;
+                        }
+                      } else if (isIOS) {
+                        // iOS Deep Links
+                        if (app === 'paytm') url = `paytmmp://pay?pa=${vpa}&pn=${name}&cu=${currency}`;
+                        else if (app === 'phonepe') url = `phonepe://pay?pa=${vpa}&pn=${name}&cu=${currency}`;
+                        else if (app === 'gpay') url = `gpay://upi/pay?pa=${vpa}&pn=${name}&cu=${currency}`;
+                        else url = baseUrl; // Fallback
+                      } else {
+                        url = baseUrl;
+                      }
+
+                      window.location.href = url;
+                    };
+
+                    return (
+                      <>
+                        {/* Paytm */}
+                        <button onClick={() => handlePayment('paytm')} className="bg-white border-2 border-stone-200 hover:border-[#00BAF2] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 w-full">
+                          <span className="font-black text-[#00BAF2] text-lg">{t.paytm}</span>
+                        </button>
+                        {/* PhonePe */}
+                        <button onClick={() => handlePayment('phonepe')} className="bg-white border-2 border-stone-200 hover:border-[#5f259f] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 w-full">
+                          <span className="font-black text-[#5f259f] text-lg">{t.phonepe}</span>
+                        </button>
+                        {/* GPay */}
+                        <button onClick={() => handlePayment('gpay')} className="bg-white border-2 border-stone-200 hover:border-[#EA4335] p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 w-full">
+                          <span className="font-black text-stone-600 text-lg"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">P</span><span className="text-[#FBBC05]">a</span><span className="text-[#34A853]">y</span></span>
+                        </button>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Mandate Checkbox (Replaces UTR/Screenshot Form) */}
