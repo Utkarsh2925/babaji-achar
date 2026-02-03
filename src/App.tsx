@@ -1607,6 +1607,25 @@ const AppContent: React.FC = () => {
                     <span className="relative z-10 flex items-center gap-2">Pay ₹{cartValues.finalTotal} <ArrowRight size={20} /></span>
                   </button>
 
+                  {/* Cash on Delivery (COD) Button - NEW */}
+                  <button onClick={() => {
+                    const name = (document.getElementById('checkout-name') as HTMLInputElement)?.value;
+                    const addr = (document.getElementById('checkout-addr') as HTMLInputElement)?.value;
+                    const pin = (document.getElementById('checkout-pin') as HTMLInputElement)?.value;
+                    const phone = (document.getElementById('checkout-phone') as HTMLInputElement)?.value;
+
+                    if (!name || !addr || !pin || !phone) return alert("Please fill all Shipping details first.");
+                    if (phone.length !== 10) return alert("Please enter a valid 10-digit phone number.");
+
+                    handleCODPayment(cartValues.finalTotal, { fullName: name, phone, street: addr, city: 'Prayagraj', state: 'UP', pincode: pin });
+
+                  }} className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-5 rounded-2xl font-black text-xl shadow-lg hover:from-green-700 hover:to-green-800 active:scale-95 transition-all flex items-center justify-center gap-3 mb-4 group relative overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <span className="relative z-10 flex items-center gap-2">
+                      💵 {lang === 'hi' ? 'कैश ऑन डिलीवरी' : 'Cash on Delivery'}
+                    </span>
+                  </button>
+
                   {/* Trust Badges */}
                   <div className="flex items-center justify-center gap-4 text-stone-400 grayscale opacity-60">
                     <span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1"><Shield size={12} /> 100% Secure</span>
