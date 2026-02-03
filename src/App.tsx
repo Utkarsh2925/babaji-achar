@@ -888,6 +888,149 @@ const AppContent: React.FC = () => {
           </div>
         )}
 
+        {view === 'PROFILE' && (
+          <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 py-8 px-4">
+            <div className="max-w-2xl mx-auto">
+              {/* Header */}
+              <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-orange-900 mb-2">
+                      {lang === 'hi' ? 'मेरा प्रोफाइल' : 'My Profile'}
+                    </h2>
+                    <p className="text-stone-600">
+                      {lang === 'hi' ? 'अपनी जानकारी अपडेट करें' : 'Update your information'}
+                    </p>
+                  </div>
+                  <button onClick={() => navigate('HOME')} className="p-2 hover:bg-stone-100 rounded-full">
+                    <XCircle size={24} className="text-stone-600" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Profile Form */}
+              <div className="bg-white rounded-2xl shadow-lg p-6 space-y-6">
+                {/* Full Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">
+                    {lang === 'hi' ? 'पूरा नाम' : 'Full Name'}
+                  </label>
+                  <input
+                    type="text"
+                    value={profileData.fullName}
+                    onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none"
+                    placeholder={lang === 'hi' ? 'अपना नाम दर्ज करें' : 'Enter your name'}
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">
+                    {lang === 'hi' ? 'ईमेल' : 'Email'}
+                  </label>
+                  <input
+                    type="email"
+                    value={profileData.email}
+                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none"
+                    placeholder={lang === 'hi' ? 'आपका ईमेल' : 'Your email'}
+                  />
+                </div>
+
+                {/* Gender */}
+                <div>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">
+                    {lang === 'hi' ? 'लिंग' : 'Gender'}
+                  </label>
+                  <select
+                    value={profileData.gender}
+                    onChange={(e) => setProfileData({ ...profileData, gender: e.target.value as any })}
+                    className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none"
+                  >
+                    <option value="">{lang === 'hi' ? 'चुनें' : 'Select'}</option>
+                    <option value="male">{lang === 'hi' ? 'पुरुष' : 'Male'}</option>
+                    <option value="female">{lang === 'hi' ? 'महिला' : 'Female'}</option>
+                    <option value="other">{lang === 'hi' ? 'अन्य' : 'Other'}</option>
+                  </select>
+                </div>
+
+                {/* Address Section */}
+                <div className="border-t-2 border-stone-100 pt-6">
+                  <h3 className="text-lg font-bold text-stone-800 mb-4">
+                    {lang === 'hi' ? 'पता' : 'Address'}
+                  </h3>
+
+                  <div className="space-y-4">
+                    <input
+                      type="text"
+                      value={profileData.address.house}
+                      onChange={(e) => setProfileData({
+                        ...profileData,
+                        address: { ...profileData.address, house: e.target.value }
+                      })}
+                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none"
+                      placeholder={lang === 'hi' ? 'मकान/फ्लैट नंबर' : 'House/Flat No.'}
+                    />
+
+                    <input
+                      type="text"
+                      value={profileData.address.area}
+                      onChange={(e) => setProfileData({
+                        ...profileData,
+                        address: { ...profileData.address, area: e.target.value }
+                      })}
+                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none"
+                      placeholder={lang === 'hi' ? 'इलाका/गली' : 'Area/Street'}
+                    />
+
+                    <input
+                      type="text"
+                      value={profileData.address.city}
+                      onChange={(e) => setProfileData({
+                        ...profileData,
+                        address: { ...profileData.address, city: e.target.value }
+                      })}
+                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none"
+                      placeholder={lang === 'hi' ? 'शहर' : 'City'}
+                    />
+
+                    <input
+                      type="text"
+                      value={profileData.address.state}
+                      onChange={(e) => setProfileData({
+                        ...profileData,
+                        address: { ...profileData.address, state: e.target.value }
+                      })}
+                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none"
+                      placeholder={lang === 'hi' ? 'राज्य' : 'State'}
+                    />
+
+                    <input
+                      type="text"
+                      value={profileData.address.pincode}
+                      onChange={(e) => setProfileData({
+                        ...profileData,
+                        address: { ...profileData.address, pincode: e.target.value }
+                      })}
+                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none"
+                      placeholder={lang === 'hi' ? 'पिन कोड' : 'Pincode'}
+                      maxLength={6}
+                    />
+                  </div>
+                </div>
+
+                {/* Save Button */}
+                <button
+                  onClick={handleSaveProfile}
+                  className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl active:scale-95 transition-all"
+                >
+                  {lang === 'hi' ? 'प्रोफाइल सहेजें' : 'Save Profile'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {view === 'HOME' && (
           <div className="animate-in fade-in duration-1000">
