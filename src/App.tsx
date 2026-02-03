@@ -4,7 +4,7 @@ import {
   ShoppingCart, User as UserIcon, ChevronRight, Instagram, Trash2, CheckCircle2, QrCode,
   ArrowLeft, MapPin, Plus, Minus, Globe, ShieldCheck, Search, Sparkles, Star, Leaf,
   MessageCircle, Package, XCircle, LogIn, Settings, Phone, ArrowRight, Shield,
-  ImageIcon, Mail, Copy, AlertCircle
+  ImageIcon, Mail, Copy, AlertCircle, Camera
 } from 'lucide-react';
 import paymentQr from './assets/payment_qr.jpg';
 // import { PaymentService } from './services/PaymentService';
@@ -561,6 +561,20 @@ const AppContent: React.FC = () => {
       return;
     }
 
+    // Validation
+    if (!profileData.fullName.trim()) {
+      alert(lang === 'hi' ? 'कृपया अपना नाम दर्ज करें' : 'Please enter your name');
+      return;
+    }
+    if (profileData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileData.email)) {
+      alert(lang === 'hi' ? 'कृपया मान्य ईमेल दर्ज करें' : 'Please enter a valid email');
+      return;
+    }
+    if (profileData.address.pincode && !/^\d{6}$/.test(profileData.address.pincode)) {
+      alert(lang === 'hi' ? 'पिन कोड 6 अंकों का होना चाहिए' : 'Pincode must be 6 digits');
+      return;
+    }
+
     try {
       await UserProfileService.saveProfile({
         phone: user.phone,
@@ -908,6 +922,27 @@ const AppContent: React.FC = () => {
                 </div>
               </div>
 
+              {/* Profile Picture Upload */}
+              <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center">
+                <div className="relative">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center border-4 border-orange-200 overflow-hidden">
+                    {user?.name ? (
+                      <span className="text-4xl font-bold text-orange-900">
+                        {user.name.charAt(0).toUpperCase()}
+                      </span>
+                    ) : (
+                      <UserIcon size={48} className="text-orange-400" />
+                    )}
+                  </div>
+                  <button className="absolute bottom-0 right-0 bg-orange-500 text-white p-2 rounded-full shadow-lg hover:bg-orange-600 transition-all">
+                    <Camera size={20} />
+                  </button>
+                </div>
+                <p className="text-sm text-stone-500 mt-3">
+                  {lang === 'hi' ? 'प्रोफाइल फोटो जल्द आ रहा है' : 'Profile photo coming soon'}
+                </p>
+              </div>
+
               {/* Profile Form */}
               <div className="bg-white rounded-2xl shadow-lg p-6 space-y-6">
                 {/* Full Name */}
@@ -921,6 +956,7 @@ const AppContent: React.FC = () => {
                     onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none"
                     placeholder={lang === 'hi' ? 'अपना नाम दर्ज करें' : 'Enter your name'}
+                    required
                   />
                 </div>
 
