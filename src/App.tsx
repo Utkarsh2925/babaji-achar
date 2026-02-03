@@ -1208,13 +1208,14 @@ const AppContent: React.FC = () => {
                       let url = '';
 
                       if (isAndroid) {
-                        // Android Intents -> Launch App Home Screen
+                        // Android Intents -> Force Launch App via UPI Scheme (Standard Entry)
+                        // Using 'upi' scheme with specific package avoids "scheme not found" errors
                         if (app === 'paytm') {
-                          url = `intent://#Intent;scheme=paytmmp;package=net.one97.paytm;S.browser_fallback_url=https://play.google.com/store/apps/details?id=net.one97.paytm;end`;
+                          url = `intent://pay?#Intent;scheme=upi;package=net.one97.paytm;S.browser_fallback_url=https://play.google.com/store/apps/details?id=net.one97.paytm;end`;
                         } else if (app === 'phonepe') {
-                          url = `intent://#Intent;scheme=phonepe;package=com.phonepe.app;S.browser_fallback_url=https://play.google.com/store/apps/details?id=com.phonepe.app;end`;
+                          url = `intent://pay?#Intent;scheme=upi;package=com.phonepe.app;S.browser_fallback_url=https://play.google.com/store/apps/details?id=com.phonepe.app;end`;
                         } else if (app === 'gpay') {
-                          url = `intent://#Intent;scheme=tez;package=com.google.android.apps.nbu.paisa.user;S.browser_fallback_url=https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user;end`;
+                          url = `intent://pay?#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;S.browser_fallback_url=https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user;end`;
                         }
                       } else if (isIOS) {
                         // iOS Deep Links -> Launch App Home Screen
