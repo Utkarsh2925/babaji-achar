@@ -10,6 +10,7 @@ import paymentQr from './assets/payment_qr.jpg';
 // import { PaymentService } from './services/PaymentService';
 import { WhatsAppService } from './services/WhatsAppService';
 import { OrderService } from './services/OrderService';
+import { UserProfileService } from './services/UserProfileService';
 import { BRAND_CONFIG, INITIAL_PRODUCTS, GET_ACTIVE_FESTIVAL, UI_TEXT } from './constants';
 import type { Product, CartItem, Order, OrderStatus, User, Review } from './types';
 
@@ -122,8 +123,23 @@ const AppContent: React.FC = () => {
   // const [isVerifying, setIsVerifying] = useState(false);
 
 
+
   // --- STATE ---
   const [offersEnabled, setOffersEnabled] = useState(true);
+
+  // Profile state
+  const [profileData, setProfileData] = useState({
+    fullName: '',
+    email: '',
+    gender: '' as 'male' | 'female' | 'other' | '',
+    address: {
+      house: '',
+      area: '',
+      city: '',
+      state: '',
+      pincode: ''
+    }
+  });
 
   // --- AUTO-COUPON LOGIC ---
   useEffect(() => {
@@ -347,6 +363,28 @@ const AppContent: React.FC = () => {
     };
   }, []);
 
+  // Load user profile from Firebase
+  useEffect(() => {
+    if (user?.phone) {
+      UserProfileService.getProfile(user.phone).then(profile => {
+        if (profile) {
+          setProfileData({
+            fullName: profile.fullName || '',
+            email: profile.email || '',
+            gender: profile.gender || '',
+            address: profile.address || {
+              house: '',
+              area: '',
+              city: '',
+              state: '',
+              pincode: ''
+            }
+          });
+        }
+      });
+    }
+  }, [user]);
+
   // --- PERSISTENCE OBSERVERS ---
   useEffect(() => { localStorage.setItem('bj_cart', JSON.stringify(cart)); }, [cart]);
   useEffect(() => { localStorage.setItem('bj_lang', lang); }, [lang]);
@@ -514,6 +552,38 @@ const AppContent: React.FC = () => {
     localStorage.setItem('bj_products', JSON.stringify(updatedProducts));
     setReviewText('');
     setReviewRating(5);
+  };
+
+  // Save user profile
+  const handleSaveProfile = async () => {
+    if (!user?.phone) {
+      alert(lang === 'hi' ? 'कृपया पहले लॉगिन करें' : 'Please login first');
+      return;
+    }
+
+    try {
+      await UserProfileService.saveProfile({
+        phone: user.phone,
+        fullName: profileData.fullName,
+        email: profileData.email,
+        gender: profileData.gender,
+        address: profileData.address
+      });
+
+      // Update local user state
+      setUser({
+        ...user,
+        name: profileData.fullName || user.name,
+        email: profileData.email,
+        gender: profileData.gender,
+        address: profileData.address
+      });
+
+      addToast(lang === 'hi' ? 'प्रोफाइल सफलतापूर्वक सहेजा गया!' : 'Profile saved successfully!', 'success');
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      addToast(lang === 'hi' ? 'प्रोफाइल सहेजने में विफल' : 'Failed to save profile', 'error');
+    }
   };
 
 
