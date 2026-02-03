@@ -1,9 +1,8 @@
-const Razorpay = require("razorpay");
-const crypto = require("crypto");
+import Razorpay from "razorpay";
 
-module.exports = async (req, res) => {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+export default async function handler(req, res) {
+    if (req.method !== "POST") {
+        return res.status(405).json({ error: "Method not allowed" });
     }
 
     try {
@@ -12,12 +11,12 @@ module.exports = async (req, res) => {
         // Validation
         if (!amount || amount <= 0) {
             console.error("Invalid amount:", amount);
-            return res.status(400).json({ error: 'Invalid amount' });
+            return res.status(400).json({ error: "Amount missing or invalid" });
         }
 
         if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
             console.error("Razorpay credentials missing in environment");
-            return res.status(500).json({ error: 'Payment gateway configuration error' });
+            return res.status(500).json({ error: "Payment gateway configuration error" });
         }
 
         console.log("Creating Razorpay order:", { amount, receipt });
@@ -28,19 +27,18 @@ module.exports = async (req, res) => {
         });
 
         const order = await razorpay.orders.create({
-            amount: amount * 100, // INR to paise
+            amount: Number(amount) * 100, // INR to paise
             currency: "INR",
-            receipt: receipt,
-            payment_capture: 1,
+            receipt: receipt || `receipt_${Date.now()}`,
         });
 
         console.log("Order created successfully:", order.id);
-        res.status(200).json(order);
-    } catch (err) {
-        console.error("Order creation error:", err.message, err.stack);
-        res.status(500).json({
-            error: err.message || 'Failed to create order',
-            details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        return res.status(200).json(order);
+    } catch (error) {
+        console.error("Razorpay order error:", error.message, error.stack);
+        return res.status(500).json({
+            error: error.message || "Failed to create order",
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
-};
+}

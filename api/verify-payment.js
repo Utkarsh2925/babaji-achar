@@ -1,6 +1,6 @@
-const crypto = require("crypto");
+import crypto from "crypto";
 
-module.exports = (req, res) => {
+export default function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -31,13 +31,13 @@ module.exports = (req, res) => {
 
         if (expectedSignature === razorpay_signature) {
             console.log("Payment verified successfully:", razorpay_payment_id);
-            res.status(200).json({ status: "success" });
+            return res.status(200).json({ status: "success" });
         } else {
             console.error("Signature mismatch for payment:", razorpay_payment_id);
-            res.status(400).json({ status: "failed", error: "Invalid signature" });
+            return res.status(400).json({ status: "failed", error: "Invalid signature" });
         }
     } catch (err) {
         console.error("Payment verification error:", err.message);
-        res.status(500).json({ error: err.message || 'Verification failed' });
+        return res.status(500).json({ error: err.message || 'Verification failed' });
     }
-};
+}

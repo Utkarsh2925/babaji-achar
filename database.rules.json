@@ -1,0 +1,12 @@
+{
+    "rules": {
+        "config": {
+            ".read": true,
+            ".write": true
+        },
+        "orders": {
+            ".read": true,
+            ".write": true
+        }
+    }
+}
