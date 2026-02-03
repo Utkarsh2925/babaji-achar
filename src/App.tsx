@@ -154,6 +154,7 @@ const AppContent: React.FC = () => {
 
     try {
       // 1. Create Order
+      console.log("Creating Razorpay order for amount:", finalAmount);
       const orderRes = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -163,28 +164,46 @@ const AppContent: React.FC = () => {
         }),
       });
 
-      if (!orderRes.ok) throw new Error("Server error creating order");
-      const orderData = await orderRes.json();
+      if (!orderRes.ok) {
+        const errorText = await orderRes.text();
+        console.error("Order creation failed:", orderRes.status, errorText);
+        throw new Error(`Server error creating order: ${orderRes.status} - ${errorText}`);
+      }
 
-      // 2. Open Checkout
+      const orderData = await orderRes.json();
+      console.log("Order created successfully:", orderData.id);
+
+      // 2. Get Razorpay Key ID
+      const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      if (!razorpayKeyId) {
+        console.error("VITE_RAZORPAY_KEY_ID not found in environment");
+        throw new Error("Payment configuration error. Please contact support.");
+      }
+
+      // 3. Open Checkout
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_live_SBYjKcIODAc0bx", // Fallback for safety
+        key: razorpayKeyId,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Baba Ji Achar",
         description: "Authentic Homemade Taste",
-        image: "https://babajiachar.com/logo.png", // Verify logo exists
+        image: "https://babaji-achar.vercel.app/logo.png",
         order_id: orderData.id,
         handler: async function (response: any) {
-          // 3. Verify Payment
+          // 4. Verify Payment
           try {
-            await fetch("/api/verify-payment", {
+            console.log("Payment successful, verifying...");
+            const verifyRes = await fetch("/api/verify-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(response),
             });
 
-            // 4. Success -> Create Order in App
+            if (!verifyRes.ok) {
+              throw new Error("Payment verification failed");
+            }
+
+            // 5. Success -> Create Order in App
             const newOrder: Order = {
               id: `Order #${Date.now().toString().slice(-6)}`,
               date: new Date().toISOString(),
@@ -205,7 +224,8 @@ const AppContent: React.FC = () => {
             navigate('SUCCESS');
 
           } catch (err) {
-            alert("Payment verification failed. Please contact support.");
+            console.error("Payment verification error:", err);
+            alert("Payment verification failed. Please contact support with your payment ID: " + response.razorpay_payment_id);
           }
         },
         prefill: {
@@ -215,13 +235,23 @@ const AppContent: React.FC = () => {
         theme: {
           color: "#ea580c",
         },
+        modal: {
+          ondismiss: function () {
+            console.log("Payment modal closed by user");
+          }
+        }
       };
 
+      console.log("Opening Razorpay checkout...");
       const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (response: any) {
+        console.error("Payment failed:", response.error);
+        alert("Payment failed: " + response.error.description);
+      });
       rzp.open();
-    } catch (err) {
-      console.error(err);
-      alert("Payment initiation failed. Please try manual payment.");
+    } catch (err: any) {
+      console.error("Payment initiation error:", err);
+      alert("Payment initiation failed: " + (err.message || "Unknown error. Please try again or contact support."));
     }
   };
 
