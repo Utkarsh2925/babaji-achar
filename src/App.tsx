@@ -264,8 +264,11 @@ const AppContent: React.FC = () => {
               items: cart,
               totalAmount: finalAmount,
               customerDetails: customerDetails,
-              paymentMethod: 'Razorpay Online',
-              utrNumber: response.razorpay_payment_id // Store Pay ID as UTR
+              paymentMethod: 'Razorpay',
+              paymentStatus: 'Paid',
+              utrNumber: response.razorpay_payment_id, // Store Pay ID as UTR
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id
             };
 
             // Save to Firebase (real-time sync)
@@ -318,13 +321,10 @@ const AppContent: React.FC = () => {
     }
   };
 
-  // --- COD HANDLER V4 (WITH FIREBASE TIMEOUT PROTECTION) ---
+  // --- PRODUCTION COD HANDLER (FINAL) ---
   const executeCODOrder = async (finalAmount: number, customerDetails: any) => {
-    alert('STEP 1: COD Handler Started');
-
     try {
-      alert('STEP 2: Creating Order Object');
-
+      // Create COD Order with proper structure
       const newOrder: Order = {
         id: `Order #${Date.now().toString().slice(-6)}`,
         date: new Date().toISOString(),
@@ -332,57 +332,48 @@ const AppContent: React.FC = () => {
         items: cart,
         totalAmount: finalAmount,
         customerDetails: customerDetails,
-        paymentMethod: 'Cash on Delivery',
-        utrNumber: 'COD'
+        paymentMethod: 'COD',
+        paymentStatus: 'Cash on Delivery',
+        utrNumber: 'COD',
+        razorpayOrderId: null,
+        razorpayPaymentId: null
       };
 
-      alert('STEP 3: Order Created. Saving to Firebase (5 sec timeout)...');
-
-      // Firebase save with 5-second timeout
-      let firebaseSaved = false;
+      // Save to Firebase (CRITICAL - Must complete)
       try {
-        await Promise.race([
-          OrderService.createOrder(newOrder).then(() => { firebaseSaved = true; }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), 5000))
-        ]);
-        alert('STEP 4: Firebase Save SUCCESS!');
-      } catch (firebaseError: any) {
-        if (firebaseError.message === 'Firebase timeout') {
-          alert('STEP 4: Firebase TIMEOUT - Proceeding with local save only');
-        } else {
-          alert('STEP 4: Firebase ERROR - ' + firebaseError.message + ' - Proceeding anyway');
-        }
-        console.error('Firebase error:', firebaseError);
+        await OrderService.createOrder(newOrder);
+        console.log('✅ COD Order saved to Firebase:', newOrder.id);
+      } catch (firebaseError) {
+        console.error('❌ Firebase save failed:', firebaseError);
+        // Re-throw to prevent navigation without save
+        throw new Error('Failed to save order. Please check your internet connection.');
       }
 
-      alert('STEP 5: Updating Local State...');
-
+      // Update local state
       const updatedOrders = [newOrder, ...orders];
       setOrders(updatedOrders);
       setCurrentOrder(newOrder);
       setCart([]);
       localStorage.setItem('bj_orders', JSON.stringify(updatedOrders));
 
-      alert('STEP 6: State Updated. Navigating to SUCCESS...');
+      // Send WhatsApp confirmation (background, non-blocking)
+      setTimeout(() => {
+        try {
+          WhatsAppService.sendOrderConfirmation(newOrder);
+          console.log('📱 WhatsApp confirmation sent');
+        } catch (e) {
+          console.error('WhatsApp notification failed:', e);
+        }
+      }, 100);
 
+      // Navigate to success
       setView('SUCCESS');
       setViewStack([...viewStack, 'SUCCESS']);
       window.scrollTo(0, 0);
 
-      alert('STEP 7: SUCCESS! Order placed' + (firebaseSaved ? ' (synced to cloud)' : ' (local only)'));
-
-      // Background WhatsApp
-      setTimeout(() => {
-        try {
-          WhatsAppService.sendOrderConfirmation(newOrder);
-        } catch (e) {
-          console.error('WhatsApp failed:', e);
-        }
-      }, 100);
-
     } catch (err: any) {
-      alert('CRITICAL ERROR: ' + err.message);
-      console.error('COD Error:', err);
+      console.error('COD Order Error:', err);
+      alert(err.message || 'Failed to place order. Please try again.');
     }
   };
 
@@ -1696,22 +1687,21 @@ const AppContent: React.FC = () => {
                     <span className="relative z-10 flex items-center gap-2">Pay ₹{cartValues.finalTotal} <ArrowRight size={20} /></span>
                   </button>
 
-                  {/* Cash on Delivery (COD) Button - REBUILT FROM SCRATCH */}
+                  {/* Cash on Delivery (COD) Button */}
                   <button onClick={async (e) => {
-                    alert('Button Clicked! Starting COD Process...');
                     e.preventDefault();
 
                     // Validation
                     if (!checkoutName || !checkoutAddress || !checkoutPin || !loginPhone) {
-                      alert("ERROR: Please fill all fields");
+                      alert("Please fill all required fields");
                       return;
                     }
                     if (loginPhone.length !== 10) {
-                      alert("ERROR: Phone must be 10 digits");
+                      alert("Please enter a valid 10-digit phone number");
                       return;
                     }
 
-                    // Call Handler
+                    // Execute COD Order
                     await executeCODOrder(cartValues.finalTotal, {
                       fullName: checkoutName,
                       phone: loginPhone,

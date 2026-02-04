@@ -54,7 +54,10 @@ export interface Order {
     totalAmount: number;
     customerDetails: Address;
     paymentMethod: string;
+    paymentStatus: string;
     utrNumber: string;
+    razorpayOrderId?: string | null;
+    razorpayPaymentId?: string | null;
 }
 
 export interface Address {

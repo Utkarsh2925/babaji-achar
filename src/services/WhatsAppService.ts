@@ -105,9 +105,18 @@ export const WhatsAppService = {
    * Trigger 1: Order Confirmation (Polite & Professional)
    */
   sendOrderConfirmation: async (order: Order) => {
+    // Determine payment method display
+    const isCOD = order.paymentMethod === 'COD';
+    const paymentMethodDisplay = isCOD
+      ? 'Cash on Delivery / कैश ऑन डिलीवरी'
+      : 'Razorpay Online Payment';
+    const paymentStatusDisplay = isCOD
+      ? 'Cash on Delivery'
+      : 'Paid / भुगतान हो गया';
+
     console.group('%c[WhatsApp Bot] 🟢 Trigger: Order Confirmation', 'color: #25D366; font-weight: bold; font-size: 12px');
     console.log(`To: ${order.customerDetails.phone}`);
-    console.log(`Msg: "🎉 *Order Confirmed!* 🎉%0a%0aHello ${order.customerDetails.fullName},%0aYour order #${order.id} has been successfully placed and confirmed! We're excited for you to enjoy Babaji Achar!%0a%0a*Order Details:*%0a🛒 Items: ${order.items.map(item => `${item.productName} x ${item.quantity}`).join(', ')}%0a%0a💳 *Payment:* ${order.paymentMethod}%0a✅ *Payment:* Completed%0a%0a*Shipping Details:*%0a👤 Name: ${order.customerDetails.fullName}%0a📱 Phone: ${order.customerDetails.phone}%0a📍 Address: ${order.customerDetails.street}, ${order.customerDetails.city}, ${order.customerDetails.pincode}%0a%0a📝 *Note:* Main aapko payment screenshot pradan krta/karti hoon. (I will share payment screenshot).%0a%0a----------------------------------%0a*Total Amount:* ₹${order.totalAmount}%0a----------------------------------`);
+    console.log(`Msg: "🎉 *Order Confirmed!* 🎉%0a%0aHello ${order.customerDetails.fullName},%0aYour order #${order.id} has been successfully placed and confirmed! We're excited for you to enjoy Babaji Achar!%0a%0a*Order Details:*%0a🛒 Items: ${order.items.map(item => `${item.productName} x ${item.quantity}`).join(', ')}%0a%0a💳 *Payment Method:* ${paymentMethodDisplay}%0a✅ *Payment Status:* ${paymentStatusDisplay}%0a%0a*Shipping Details:*%0a👤 Name: ${order.customerDetails.fullName}%0a📱 Phone: ${order.customerDetails.phone}%0a📍 Address: ${order.customerDetails.street}, ${order.customerDetails.city}, ${order.customerDetails.pincode}%0a%0a----------------------------------%0a*Total Amount:* ₹${order.totalAmount}%0a----------------------------------`);
     console.groupEnd();
   },
 
