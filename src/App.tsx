@@ -319,60 +319,56 @@ const AppContent: React.FC = () => {
   };
 
   // --- CASH ON DELIVERY (COD) HANDLER ---
-  // --- CASH ON DELIVERY (COD) HANDLER ---
-  const handleCODPayment = async (finalAmount: number, customerDetails: any) => {
-    console.log('🟡 COD Payment initiated:', { finalAmount, customerDetails });
+  // --- ROBUST COD HANDLER V2 (DIRECT STATE) ---
+  const executeCODOrder = async (finalAmount: number, customerDetails: any) => {
+    console.group("🚀 COD_V2 Execution");
+    console.log('Initiating COD Payment:', { finalAmount, customerDetails });
 
     try {
-      // Create Order with COD payment method
+      // 1. Create Order Object
       const newOrder: Order = {
         id: `Order #${Date.now().toString().slice(-6)}`,
         date: new Date().toISOString(),
-        status: 'Pending', // COD orders start as Pending
+        status: 'Pending', // COD starts as Pending
         items: cart,
         totalAmount: finalAmount,
         customerDetails: customerDetails,
-        paymentMethod: 'Cash on Delivery', // COD payment method
-        utrNumber: 'COD' // Mark as COD
+        paymentMethod: 'Cash on Delivery',
+        utrNumber: 'COD'
       };
 
-      // 1. Save to Firebase (real-time sync)
-      try {
-        await OrderService.createOrder(newOrder);
-        console.log('COD Order saved to Firebase successfully');
-      } catch (firebaseError) {
-        console.error('Failed to save COD order to Firebase:', firebaseError);
-        // Continue to local save as fallback
-      }
+      // 2. Firebase Save (CRITICAL - Awaited)
+      console.log("⏳ Saving to Firebase...");
+      await OrderService.createOrder(newOrder);
+      console.log("✅ Firebase Save Complete");
 
-      // 2. Save to localStorage (Backup)
-      try {
-        const updatedOrders = [newOrder, ...orders];
-        setOrders(updatedOrders);
-        localStorage.setItem('bj_orders', JSON.stringify(updatedOrders));
-        setCurrentOrder(newOrder);
-      } catch (storageError) {
-        console.error('Failed to save order to localStorage:', storageError);
-        // Continue, not critical for completion
-      }
+      // 3. Local State Updates (Sync)
+      const updatedOrders = [newOrder, ...orders];
+      setOrders(updatedOrders);
+      setCurrentOrder(newOrder);
+      setCart([]); // Clear cart immediately
+      localStorage.setItem('bj_orders', JSON.stringify(updatedOrders));
 
-      setCart([]); // Clear cart in state
+      // 4. FORCE NAVIGATION (Direct State Update)
+      console.log("🔄 Switching View to SUCCESS");
+      setView('SUCCESS');
+      window.scrollTo(0, 0);
 
-      // 3. Send WhatsApp confirmation
-      try {
-        await WhatsAppService.sendOrderConfirmation(newOrder);
-      } catch (waError) {
-        console.error('Failed to send WhatsApp confirmation:', waError);
-        // Continue, not critical
-      }
-
-      // 4. Navigate to SUCCESS (CRITICAL STEP)
-      console.log('✅ Order processed, navigating to SUCCESS');
-      navigate('SUCCESS');
+      // 5. Background Tasks (Fire & Forget)
+      setTimeout(() => {
+        try {
+          WhatsAppService.sendOrderConfirmation(newOrder);
+          console.log("📱 WhatsApp Sent");
+        } catch (e) {
+          console.error("⚠️ Background WhatsApp Failed", e);
+        }
+      }, 100);
 
     } catch (err: any) {
-      console.error("COD order creation critical error:", err);
-      alert("Failed to create COD order. Please try again.");
+      console.error("❌ COD CRITICAL FAILURE:", err);
+      alert("Order Failed. Please check your internet connection and try again.");
+    } finally {
+      console.groupEnd();
     }
   };
 
@@ -1688,23 +1684,26 @@ const AppContent: React.FC = () => {
 
                   {/* Cash on Delivery (COD) Button - NEW */}
                   <button onClick={async (e) => {
-                    console.log('🔵 COD Button clicked!');
+                    console.log('🔵 COD Button Clicked (V2)');
                     e.preventDefault();
 
-                    console.log('🔍 Checking form validation...', { checkoutName, checkoutAddress, checkoutPin, loginPhone });
-
+                    // Strict Validation
                     if (!checkoutName || !checkoutAddress || !checkoutPin || !loginPhone) {
-                      console.error('❌ Validation failed: Missing fields');
                       return alert("Please fill all Shipping details first.");
                     }
                     if (loginPhone.length !== 10) {
-                      console.error('❌ Validation failed: Invalid phone number');
                       return alert("Please enter a valid 10-digit phone number");
                     }
 
-                    console.log('✅ Validation passed, calling handleCODPayment...');
-                    await handleCODPayment(cartValues.finalTotal, { fullName: checkoutName, phone: loginPhone, street: checkoutAddress, city: 'Prayagraj', state: 'UP', pincode: checkoutPin });
-                    console.log('🔵 handleCODPayment completed, should navigate to SUCCESS');
+                    // Execute V2 Handler
+                    await executeCODOrder(cartValues.finalTotal, {
+                      fullName: checkoutName,
+                      phone: loginPhone,
+                      street: checkoutAddress,
+                      city: 'Prayagraj',
+                      state: 'UP',
+                      pincode: checkoutPin
+                    });
 
                   }} className="w-full bg-yellow-500 text-white py-5 rounded-2xl font-black text-xl shadow-lg hover:bg-yellow-600 active:scale-95 transition-all flex items-center justify-center gap-3 mb-4 group relative overflow-hidden">
 
