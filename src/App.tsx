@@ -707,7 +707,7 @@ const AppContent: React.FC = () => {
 
   const categories = [
     { id: 'All', label: t.all },
-    { id: 'Special', label: t.special },
+    { id: 'RedChilliLink', label: lang === 'hi' ? 'भरवा लाल मिर्च' : 'Bharwa Lal Mirch' },
     { id: 'Mix', label: t.mix },
     { id: 'Mango', label: t.mango },
     { id: 'Aawla', label: t.aawla },
@@ -1134,7 +1134,21 @@ const AppContent: React.FC = () => {
             <div className="sticky top-[72px] sm:top-[89px] z-40 bg-white/60 backdrop-blur-xl border-b border-orange-100/50 py-4 sm:py-6 overflow-x-auto no-scrollbar">
               <div className="w-full max-w-[1920px] mx-auto px-6 sm:px-12 flex gap-3 sm:gap-5 whitespace-nowrap justify-start lg:justify-center">
                 {categories.map(cat => (
-                  <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className={`px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-sm sm:text-base font-black border-2 transition-all ${selectedCategory === cat.id ? 'bg-orange-700 border-orange-700 text-white shadow-lg' : 'bg-white border-orange-50 text-orange-900'}`}>{cat.label}</button>
+                  <button key={cat.id} onClick={() => {
+                    if (cat.id === 'RedChilliLink') {
+                      const p = products.find(x => x.id === 'red-chilli-pickle-01');
+                      if (p) {
+                        const v = p.variants.find(k => k.stock > 0) || p.variants[0];
+                        setSelectedProduct(p);
+                        setSelectedVariantId(v.id);
+                        setActiveImage(p.mainImage);
+                        setView('DETAILS');
+                        window.scrollTo(0, 0);
+                      }
+                    } else {
+                      setSelectedCategory(cat.id);
+                    }
+                  }} className={`px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-sm sm:text-base font-black border-2 transition-all ${selectedCategory === cat.id ? 'bg-orange-700 border-orange-700 text-white shadow-lg' : 'bg-white border-orange-50 text-orange-900'}`}>{cat.label}</button>
                 ))}
               </div>
             </div>
@@ -1637,12 +1651,13 @@ const AppContent: React.FC = () => {
                   </button>
 
                   {/* Cash on Delivery (COD) Button - NEW */}
-                  <button onClick={() => {
-                    // ... (logic simplified for brevity in replacement, focusing on class) ...
-                    const name = (document.getElementById('c-name') as HTMLInputElement).value;
-                    const addr = (document.getElementById('c-addr') as HTMLInputElement).value;
-                    const pin = (document.getElementById('c-pin') as HTMLInputElement).value;
-                    const phone = (document.getElementById('c-phone') as HTMLInputElement).value;
+                  <button onClick={(e) => {
+                    e.preventDefault(); // Prevent accidental form submission or bubbling
+                    // Safe DOM access with optional chaining to prevent crashes
+                    const name = (document.getElementById('c-name') as HTMLInputElement)?.value;
+                    const addr = (document.getElementById('c-addr') as HTMLInputElement)?.value;
+                    const pin = (document.getElementById('c-pin') as HTMLInputElement)?.value;
+                    const phone = (document.getElementById('c-phone') as HTMLInputElement)?.value;
 
                     if (!name || !addr || !pin || !phone) return alert("Please fill all Shipping details first.");
                     if (phone.length !== 10) return alert("Please enter a valid 10-digit phone number");
