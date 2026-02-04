@@ -13,7 +13,7 @@ import { WhatsAppService } from './services/WhatsAppService';
 import { OrderService } from './services/OrderService';
 import { UserProfileService } from './services/UserProfileService';
 // Firebase Auth Imports
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithPopup, signInAnonymously } from 'firebase/auth';
 import { auth, googleProvider } from './firebase.config';
 import { BRAND_CONFIG, INITIAL_PRODUCTS, GET_ACTIVE_FESTIVAL, UI_TEXT } from './constants';
 import type { Product, CartItem, Order, OrderStatus, User, Review } from './types';
@@ -619,12 +619,19 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginPhone) return addToast('error', 'Required', 'Please enter your phone number or email');
 
     // Check for admin bypass
     if (loginPhone === '0000' && loginName === 'Vandita') {
+      try {
+        // Authenticate anonymously to ensure Firebase Database access (if rules require auth)
+        await signInAnonymously(auth);
+      } catch (err) {
+        console.error("Admin Firebase Auth failed", err);
+      }
+
       const adminUser: User = { id: 'admin-01', name: 'Super Admin', role: 'ADMIN', phone: '0000' };
       setUser(adminUser);
       localStorage.setItem('bj_user', JSON.stringify(adminUser));
