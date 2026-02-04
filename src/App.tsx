@@ -1779,9 +1779,12 @@ const AppContent: React.FC = () => {
                 </div>
 
                 {/* Security Note */}
-                <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
-                  <p className="text-red-700 font-bold text-sm leading-relaxed">
+                <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6 text-left">
+                  <p className="text-red-700 font-bold text-sm leading-relaxed mb-2">
                     ⚠️ Important: It is mandatory to send WhatsApp confirmation for security and authenticity verification.
+                  </p>
+                  <p className="text-red-700 font-bold text-sm leading-relaxed hindi-font">
+                    ⚠️ महत्वपूर्ण: सुरक्षा और प्रमाणिकता के लिए व्हाट्सएप पर पुष्टि भेजना अनिवार्य है।
                   </p>
                 </div>
 
