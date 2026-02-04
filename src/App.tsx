@@ -318,18 +318,17 @@ const AppContent: React.FC = () => {
     }
   };
 
-  // --- CASH ON DELIVERY (COD) HANDLER ---
-  // --- ROBUST COD HANDLER V2 (DIRECT STATE) ---
+  // --- COD HANDLER V3 (ULTRA-SIMPLE WITH STEP-BY-STEP ALERTS) ---
   const executeCODOrder = async (finalAmount: number, customerDetails: any) => {
-    console.group("🚀 COD_V2 Execution");
-    console.log('Initiating COD Payment:', { finalAmount, customerDetails });
+    alert('STEP 1: COD Handler Started');
 
     try {
-      // 1. Create Order Object
+      alert('STEP 2: Creating Order Object');
+
       const newOrder: Order = {
         id: `Order #${Date.now().toString().slice(-6)}`,
         date: new Date().toISOString(),
-        status: 'Pending', // COD starts as Pending
+        status: 'Pending',
         items: cart,
         totalAmount: finalAmount,
         customerDetails: customerDetails,
@@ -337,38 +336,44 @@ const AppContent: React.FC = () => {
         utrNumber: 'COD'
       };
 
-      // 2. Firebase Save (CRITICAL - Awaited)
-      console.log("⏳ Saving to Firebase...");
-      await OrderService.createOrder(newOrder);
-      console.log("✅ Firebase Save Complete");
+      alert('STEP 3: Order Object Created. Saving to Firebase...');
 
-      // 3. Local State Updates (Sync)
+      try {
+        await OrderService.createOrder(newOrder);
+        alert('STEP 4: Firebase Save SUCCESS!');
+      } catch (firebaseError) {
+        alert('STEP 4 ERROR: Firebase Failed - ' + firebaseError);
+        throw firebaseError;
+      }
+
+      alert('STEP 5: Updating Local State...');
+
       const updatedOrders = [newOrder, ...orders];
       setOrders(updatedOrders);
       setCurrentOrder(newOrder);
-      setCart([]); // Clear cart immediately
+      setCart([]);
       localStorage.setItem('bj_orders', JSON.stringify(updatedOrders));
 
-      // 4. FORCE NAVIGATION (Direct State Update)
-      console.log("🔄 Switching View to SUCCESS");
+      alert('STEP 6: State Updated. Now Navigating to SUCCESS...');
+
       setView('SUCCESS');
+      setViewStack([...viewStack, 'SUCCESS']);
       window.scrollTo(0, 0);
 
-      // 5. Background Tasks (Fire & Forget)
+      alert('STEP 7: Navigation Complete! You should see SUCCESS page now.');
+
+      // Background WhatsApp
       setTimeout(() => {
         try {
           WhatsAppService.sendOrderConfirmation(newOrder);
-          console.log("📱 WhatsApp Sent");
         } catch (e) {
-          console.error("⚠️ Background WhatsApp Failed", e);
+          console.error('WhatsApp failed:', e);
         }
       }, 100);
 
     } catch (err: any) {
-      console.error("❌ COD CRITICAL FAILURE:", err);
-      alert("Order Failed. Please check your internet connection and try again.");
-    } finally {
-      console.groupEnd();
+      alert('CRITICAL ERROR: ' + err.message);
+      console.error('COD Error:', err);
     }
   };
 
@@ -1682,20 +1687,22 @@ const AppContent: React.FC = () => {
                     <span className="relative z-10 flex items-center gap-2">Pay ₹{cartValues.finalTotal} <ArrowRight size={20} /></span>
                   </button>
 
-                  {/* Cash on Delivery (COD) Button - NEW */}
+                  {/* Cash on Delivery (COD) Button - REBUILT FROM SCRATCH */}
                   <button onClick={async (e) => {
-                    console.log('🔵 COD Button Clicked (V2)');
+                    alert('Button Clicked! Starting COD Process...');
                     e.preventDefault();
 
-                    // Strict Validation
+                    // Validation
                     if (!checkoutName || !checkoutAddress || !checkoutPin || !loginPhone) {
-                      return alert("Please fill all Shipping details first.");
+                      alert("ERROR: Please fill all fields");
+                      return;
                     }
                     if (loginPhone.length !== 10) {
-                      return alert("Please enter a valid 10-digit phone number");
+                      alert("ERROR: Phone must be 10 digits");
+                      return;
                     }
 
-                    // Execute V2 Handler
+                    // Call Handler
                     await executeCODOrder(cartValues.finalTotal, {
                       fullName: checkoutName,
                       phone: loginPhone,
