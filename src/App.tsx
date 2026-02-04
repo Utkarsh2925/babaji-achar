@@ -12,6 +12,9 @@ import {
 import { WhatsAppService } from './services/WhatsAppService';
 import { OrderService } from './services/OrderService';
 import { UserProfileService } from './services/UserProfileService';
+// Firebase Auth Imports
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from './firebase.config';
 import { BRAND_CONFIG, INITIAL_PRODUCTS, GET_ACTIVE_FESTIVAL, UI_TEXT } from './constants';
 import type { Product, CartItem, Order, OrderStatus, User, Review } from './types';
 
@@ -590,6 +593,32 @@ const AppContent: React.FC = () => {
 
 
 
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      if (user) {
+        // Map Google User to App User
+        const newUser: User = {
+          id: user.uid,
+          name: user.displayName || 'Valued Customer',
+          role: 'USER',
+          phone: user.email || 'Google User', // Fallback for phone
+          email: user.email || undefined
+        };
+
+        setUser(newUser);
+        localStorage.setItem('bj_user', JSON.stringify(newUser));
+        addToast('success', 'Welcome!', `Signed in as ${newUser.name}`);
+        navigate('HOME');
+      }
+    } catch (error: any) {
+      console.error("Google Sign-In Error", error);
+      addToast('error', 'Login Failed', error.message || 'Could not sign in with Google');
+    }
+  };
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginPhone) return addToast('error', 'Required', 'Please enter your phone number or email');
@@ -1008,6 +1037,23 @@ const AppContent: React.FC = () => {
 
                   <button type="submit" className="w-full h-20 bg-orange-50 text-orange-900 border-4 border-orange-100 rounded-3xl font-black text-2xl sm:text-3xl shadow-xl flex items-center justify-center gap-3 transition-all hover:bg-orange-100 hover:border-orange-300 hover:scale-[1.02] active:scale-95 active:translate-y-1 whitespace-nowrap group">
                     Proceed <ArrowRight size={28} className="text-orange-600 group-hover:translate-x-1 transition-transform" />
+                  </button>
+
+                  {/* Google Sign In Separator */}
+                  <div className="flex items-center gap-4 my-2">
+                    <div className="h-px bg-stone-200 flex-grow"></div>
+                    <span className="text-stone-400 font-bold uppercase text-sm">OR</span>
+                    <div className="h-px bg-stone-200 flex-grow"></div>
+                  </div>
+
+                  {/* Google Sign In Button */}
+                  <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    className="w-full h-16 bg-white text-stone-600 border-2 border-stone-200 rounded-3xl font-bold text-lg sm:text-xl shadow-md flex items-center justify-center gap-3 transition-all hover:bg-stone-50 hover:border-stone-300 active:scale-95"
+                  >
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
+                    Sign in with Google
                   </button>
                 </form>
               </div>
