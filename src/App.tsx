@@ -321,8 +321,14 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const [isCodLoading, setIsCodLoading] = useState(false);
+
   // --- PRODUCTION COD HANDLER (FINAL) ---
   const executeCODOrder = async (finalAmount: number, customerDetails: any) => {
+    if (isCodLoading) return; // Prevent double clicks
+
+    setIsCodLoading(true);
+
     try {
       // Create COD Order with proper structure
       const newOrder: Order = {
@@ -340,7 +346,11 @@ const AppContent: React.FC = () => {
       };
 
       // Save to Firebase (MUST complete before proceeding)
-      await OrderService.createOrder(newOrder);
+      // Added 15s safety timeout to prevent infinite hanging
+      await Promise.race([
+        OrderService.createOrder(newOrder),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timed out. Please check your internet.')), 15000))
+      ]);
 
       // Update local state
       const updatedOrders = [newOrder, ...orders];
@@ -354,7 +364,7 @@ const AppContent: React.FC = () => {
         try {
           WhatsAppService.sendOrderConfirmation(newOrder);
         } catch (e) {
-          // Silent fail - don't block user experience
+          // Silent fail
         }
       }, 100);
 
@@ -365,9 +375,13 @@ const AppContent: React.FC = () => {
 
     } catch (err: any) {
       // Only show user-friendly error message
-      alert('Unable to place order. Please check your internet connection and try again.');
+      alert(err.message || 'Unable to place order. Please check your internet connection.');
+    } finally {
+      setIsCodLoading(false);
     }
   };
+
+
 
   useEffect(() => {
     // 1. Subscribe to Firebase Orders (real-time sync)
@@ -1680,34 +1694,45 @@ const AppContent: React.FC = () => {
                   </button>
 
                   {/* Cash on Delivery (COD) Button */}
-                  <button onClick={async (e) => {
-                    e.preventDefault();
+                  <button
+                    disabled={isCodLoading}
+                    onClick={async (e) => {
+                      e.preventDefault();
 
-                    // Validation
-                    if (!checkoutName || !checkoutAddress || !checkoutPin || !loginPhone) {
-                      alert("Please fill all required fields");
-                      return;
-                    }
-                    if (loginPhone.length !== 10) {
-                      alert("Please enter a valid 10-digit phone number");
-                      return;
-                    }
+                      // Validation
+                      if (!checkoutName || !checkoutAddress || !checkoutPin || !loginPhone) {
+                        alert("Please fill all required fields");
+                        return;
+                      }
+                      if (loginPhone.length !== 10) {
+                        alert("Please enter a valid 10-digit phone number");
+                        return;
+                      }
 
-                    // Execute COD Order
-                    await executeCODOrder(cartValues.finalTotal, {
-                      fullName: checkoutName,
-                      phone: loginPhone,
-                      street: checkoutAddress,
-                      city: 'Prayagraj',
-                      state: 'UP',
-                      pincode: checkoutPin
-                    });
+                      // Execute COD Order
+                      await executeCODOrder(cartValues.finalTotal, {
+                        fullName: checkoutName,
+                        phone: loginPhone,
+                        street: checkoutAddress,
+                        city: 'Prayagraj',
+                        state: 'UP',
+                        pincode: checkoutPin
+                      });
 
-                  }} className="w-full bg-yellow-500 text-white py-5 rounded-2xl font-black text-xl shadow-lg hover:bg-yellow-600 active:scale-95 transition-all flex items-center justify-center gap-3 mb-4 group relative overflow-hidden">
+                    }} className={`w-full bg-yellow-500 text-white py-5 rounded-2xl font-black text-xl shadow-lg hover:bg-yellow-600 active:scale-95 transition-all flex items-center justify-center gap-3 mb-4 group relative overflow-hidden ${isCodLoading ? 'opacity-75 cursor-not-allowed' : ''}`}>
 
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                     <span className="relative z-10 flex items-center gap-2">
-                      💵 {lang === 'hi' ? 'कैश ऑन डिलीवरी' : 'Cash on Delivery'}
+                      {isCodLoading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          💵 {lang === 'hi' ? 'कैश ऑन डिलीवरी' : 'Cash on Delivery'}
+                        </>
+                      )}
                     </span>
                   </button>
 
