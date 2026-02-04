@@ -163,6 +163,24 @@ const AppContent: React.FC = () => {
     }
   }, [view, loginPhone, orders, appliedCoupon, offersEnabled]);
 
+  // Initialize checkout form state when entering CHECKOUT view
+  useEffect(() => {
+    if (view === 'CHECKOUT') {
+      // Initialize with user data if available
+      if (user?.name && !checkoutName) {
+        setCheckoutName(user.name);
+      }
+      // Initialize address from profile if available
+      if (profileData.address?.house && !checkoutAddress) {
+        const addr = `${profileData.address.house}, ${profileData.address.area}, ${profileData.address.city}`;
+        setCheckoutAddress(addr);
+      }
+      if (profileData.address?.pincode && !checkoutPin) {
+        setCheckoutPin(profileData.address.pincode);
+      }
+    }
+  }, [view, user, profileData, checkoutName, checkoutAddress, checkoutPin]);
+
   const t = UI_TEXT[lang];
   const festival = useMemo(() => GET_ACTIVE_FESTIVAL(), []);
 
