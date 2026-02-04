@@ -93,7 +93,7 @@ const AppContent: React.FC = () => {
   const [view, setView] = useState<'HOME' | 'DETAILS' | 'CART' | 'CHECKOUT' | 'SUCCESS' | 'PROFILE' | 'EDIT_PROFILE' | 'LOGIN' | 'ADMIN' | 'STORES' | 'PRIVACY' | 'REFUND' | 'TERMS' | 'DISCLAIMER'>('HOME');
   // Removed paymentProofType as requested
 
-  type Coupon = { code: string; type: 'FLAT' | 'PERCENTAGE'; value: number; freeDelivery?: boolean; };
+  type Coupon = { code: string; type: 'FLAT' | 'PERCENTAGE'; value: number; freeDelivery?: boolean; description?: string; };
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [viewStack, setViewStack] = useState<string[]>(['HOME']);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -155,11 +155,23 @@ const AppContent: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
+  // Auto-apply 5% discount for first-time users (calculated dynamically from Firebase orders)
   useEffect(() => {
     if (view === 'CHECKOUT' && !appliedCoupon && loginPhone.length === 10 && offersEnabled) {
-      const isExistingUser = orders.some(o => o.customerDetails.phone === loginPhone);
-      if (!isExistingUser) {
-        setAppliedCoupon({ code: 'FIRST5', type: 'PERCENTAGE', value: 5 });
+      // Check if user has any previous orders in Firebase
+      const userOrders = orders.filter(o => o.customerDetails.phone === loginPhone);
+
+      if (userOrders.length === 0) {
+        // First-time user → Apply 5% welcome discount
+        console.log('First-time user detected, applying 5% discount');
+        setAppliedCoupon({
+          code: 'WELCOME5',
+          type: 'PERCENTAGE',
+          value: 5,
+          description: 'First Order Discount'
+        });
+      } else {
+        console.log(`Returning user with ${userOrders.length} previous orders, no discount`);
       }
     }
   }, [view, loginPhone, orders, appliedCoupon, offersEnabled]);
@@ -309,6 +321,8 @@ const AppContent: React.FC = () => {
 
   // --- CASH ON DELIVERY (COD) HANDLER ---
   const handleCODPayment = async (finalAmount: number, customerDetails: any) => {
+    console.log('🟡 COD Payment initiated:', { finalAmount, customerDetails });
+
     try {
       // Create Order with COD payment method
       const newOrder: Order = {
@@ -418,10 +432,8 @@ const AppContent: React.FC = () => {
 
 
 
-    try {
-      const savedCoupon = localStorage.getItem('bj_coupon');
-      if (savedCoupon) setAppliedCoupon(JSON.parse(savedCoupon as string));
-    } catch (e) { console.error("Failed to load coupon", e); }
+    // REMOVED: localStorage coupon cache to force fresh calculation on every checkout
+    // Coupon is now calculated dynamically based on Firebase order history
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
@@ -455,10 +467,9 @@ const AppContent: React.FC = () => {
   useEffect(() => { localStorage.setItem('bj_cart', JSON.stringify(cart)); }, [cart]);
   useEffect(() => { localStorage.setItem('bj_lang', lang); }, [lang]);
   // REMOVED viewStack persistence to prevent navigation loops
-  useEffect(() => {
-    if (appliedCoupon) localStorage.setItem('bj_coupon', JSON.stringify(appliedCoupon));
-    else localStorage.removeItem('bj_coupon');
-  }, [appliedCoupon]);
+  // REMOVED: Coupon localStorage persistence
+  // Coupon is now calculated fresh on every checkout based on Firebase order history
+  // This prevents old coupon codes (like FIRST10) from persisting in browser storage
 
   const updateProductVariant = (productId: string, variantId: string, newStock: number) => {
     const updatedProducts = products.map(p => {
