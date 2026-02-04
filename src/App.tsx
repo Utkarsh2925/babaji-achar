@@ -324,10 +324,11 @@ const AppContent: React.FC = () => {
   const [isCodLoading, setIsCodLoading] = useState(false);
 
   // --- PRODUCTION COD HANDLER (FINAL) ---
-  const executeCODOrder = async (finalAmount: number, customerDetails: any) => {
+  const executeCODOrder = (finalAmount: number, customerDetails: any) => {
     if (isCodLoading) return; // Prevent double clicks
 
     setIsCodLoading(true);
+    console.log('🟡 COD: Starting order process...');
 
     try {
       // Create COD Order with proper structure
@@ -345,8 +346,15 @@ const AppContent: React.FC = () => {
         razorpayPaymentId: null
       };
 
+      console.log('🟡 COD: Order object created:', newOrder);
+
       // Save to Firebase (instant now that database is enabled)
-      await OrderService.createOrder(newOrder);
+      console.log('🟡 COD: Attempting Firebase save...');
+      // Save to Firebase (Optimistic - Fire and Forget)
+      console.log('🟡 COD: Triggering Firebase save (Background)...');
+      OrderService.createOrder(newOrder).catch(e => console.error('background save failed', e));
+      console.log('✅ COD: Proceeding immediately...');
+      console.log('✅ COD: Firebase save successful!');
 
       // Update local state
       const updatedOrders = [newOrder, ...orders];
@@ -354,26 +362,32 @@ const AppContent: React.FC = () => {
       setCurrentOrder(newOrder);
       setCart([]);
       localStorage.setItem('bj_orders', JSON.stringify(updatedOrders));
+      console.log('✅ COD: Local state updated');
 
       // Send WhatsApp confirmation (background, non-blocking)
       setTimeout(() => {
         try {
           WhatsAppService.sendOrderConfirmation(newOrder);
+          console.log('✅ COD: WhatsApp sent');
         } catch (e) {
-          // Silent fail
+          console.error('⚠️ COD: WhatsApp failed:', e);
         }
       }, 100);
 
       // Navigate to success
+      console.log('✅ COD: Navigating to success...');
       setView('SUCCESS');
       setViewStack([...viewStack, 'SUCCESS']);
       window.scrollTo(0, 0);
+      console.log('✅ COD: Complete!');
 
     } catch (err: any) {
+      console.error('❌ COD: Error caught:', err);
       // Only show user-friendly error message
       alert(err.message || 'Unable to place order. Please check your internet connection.');
     } finally {
       setIsCodLoading(false);
+      console.log('🟡 COD: Loading state reset');
     }
   };
 
