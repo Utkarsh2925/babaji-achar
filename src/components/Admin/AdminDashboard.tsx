@@ -9,6 +9,8 @@ import AdminProducts from './AdminProducts';
 import AdminStores from './AdminStores'; // Import
 import DataCentre from './DataCentre';
 import { ConfigService } from '../../services/ConfigService';
+import { db, auth } from '../../firebase.config';
+import { ref, set, get } from 'firebase/database';
 import type { Order, Product, OrderStatus, Store } from '../../types';
 
 interface AdminDashboardProps {
@@ -66,11 +68,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
     // DEBUG: Force Connection Test
     const runConnectionTest = async () => {
+        alert('🔄 Starting Test...');
         console.log('🧪 Starting Connection Test...');
         try {
-            // Import dynamically to avoid top-level issues if any
-            const { db } = await import('../../firebase.config');
-            const { ref, set, get, child } = await import('firebase/database');
+            // 0. Auth Check
+            if (!auth.currentUser) {
+                alert('❌ Auth Error: You are NOT logged in to Firebase. Anonymous Auth failed.');
+                return;
+            } else {
+                alert(`✅ Auth OK: User ID: ${auth.currentUser.uid} (Is Anon: ${auth.currentUser.isAnonymous})`);
+            }
 
             // 1. Write Test
             const testRef = ref(db, 'connection_test_' + Date.now());
@@ -95,12 +102,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
     return (
         <div className="min-h-screen bg-stone-50 flex font-sans">
-            {/* DEBUG TEST BUTTON */}
-            <button onClick={runConnectionTest} className="fixed bottom-4 right-4 z-[200] bg-blue-600 text-white px-4 py-2 rounded-full font-bold shadow-xl border-2 border-white">
-                🧪 Test DB Access
+            {/* DEBUG TEST BUTTON - High Z-Index */}
+            <button
+                onClick={runConnectionTest}
+                className="fixed bottom-20 right-4 z-[99999] bg-blue-600 text-white px-6 py-4 rounded-full font-black shadow-2xl border-4 border-white text-lg hover:scale-105 active:scale-95 transition-all"
+            >
+                🧪 TEST DB
             </button>
 
-            {/* DEBUG BANNER FOR FIREBASE ERRORS */}
             {/* DEBUG BANNER FOR FIREBASE ERRORS */}
             {firebaseError && (
                 <div className="fixed top-0 left-0 right-0 z-[100] bg-red-600 text-white px-6 py-3 font-bold flex items-center justify-center gap-4 shadow-xl animate-pulse">
