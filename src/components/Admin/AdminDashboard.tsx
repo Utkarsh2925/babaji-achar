@@ -64,8 +64,43 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         setIsSidebarOpen(false);
     };
 
+    // DEBUG: Force Connection Test
+    const runConnectionTest = async () => {
+        console.log('🧪 Starting Connection Test...');
+        try {
+            // Import dynamically to avoid top-level issues if any
+            const { db } = await import('../../firebase.config');
+            const { ref, set, get, child } = await import('firebase/database');
+
+            // 1. Write Test
+            const testRef = ref(db, 'connection_test_' + Date.now());
+            await set(testRef, { timestamp: Date.now(), status: 'OK' });
+            alert('✅ Write Test Passed!');
+
+            // 2. Read Test
+            const ordersRef = ref(db, 'orders');
+            const snapshot = await get(ordersRef);
+            if (snapshot.exists()) {
+                alert(`✅ Read Test Passed! Found ${snapshot.size} orders.`);
+                console.log('Orders:', snapshot.val());
+            } else {
+                alert('⚠️ Read Test: Connection OK, but NO ORDERS found in "orders" path.');
+            }
+
+        } catch (e: any) {
+            console.error(e);
+            alert(`❌ Test Failed: ${e.message}`);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-stone-50 flex font-sans">
+            {/* DEBUG TEST BUTTON */}
+            <button onClick={runConnectionTest} className="fixed bottom-4 right-4 z-[200] bg-blue-600 text-white px-4 py-2 rounded-full font-bold shadow-xl border-2 border-white">
+                🧪 Test DB Access
+            </button>
+
+            {/* DEBUG BANNER FOR FIREBASE ERRORS */}
             {/* DEBUG BANNER FOR FIREBASE ERRORS */}
             {firebaseError && (
                 <div className="fixed top-0 left-0 right-0 z-[100] bg-red-600 text-white px-6 py-3 font-bold flex items-center justify-center gap-4 shadow-xl animate-pulse">
