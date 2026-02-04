@@ -339,15 +339,8 @@ const AppContent: React.FC = () => {
         razorpayPaymentId: null
       };
 
-      // Save to Firebase (CRITICAL - Must complete)
-      try {
-        await OrderService.createOrder(newOrder);
-        console.log('✅ COD Order saved to Firebase:', newOrder.id);
-      } catch (firebaseError) {
-        console.error('❌ Firebase save failed:', firebaseError);
-        // Re-throw to prevent navigation without save
-        throw new Error('Failed to save order. Please check your internet connection.');
-      }
+      // Save to Firebase (MUST complete before proceeding)
+      await OrderService.createOrder(newOrder);
 
       // Update local state
       const updatedOrders = [newOrder, ...orders];
@@ -360,9 +353,8 @@ const AppContent: React.FC = () => {
       setTimeout(() => {
         try {
           WhatsAppService.sendOrderConfirmation(newOrder);
-          console.log('📱 WhatsApp confirmation sent');
         } catch (e) {
-          console.error('WhatsApp notification failed:', e);
+          // Silent fail - don't block user experience
         }
       }, 100);
 
@@ -372,8 +364,8 @@ const AppContent: React.FC = () => {
       window.scrollTo(0, 0);
 
     } catch (err: any) {
-      console.error('COD Order Error:', err);
-      alert(err.message || 'Failed to place order. Please try again.');
+      // Only show user-friendly error message
+      alert('Unable to place order. Please check your internet connection and try again.');
     }
   };
 
