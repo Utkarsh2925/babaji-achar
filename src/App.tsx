@@ -488,18 +488,70 @@ const AppContent: React.FC = () => {
     }
 
     // 1. Subscribe to Firebase Orders (real-time sync)
+    // 1. Subscribe to Firebase Orders (SDK - Realtime)
     const unsubscribeOrders = OrderService.subscribeToOrders(
       (firebaseOrders) => {
-        console.log('Received orders from Firebase:', firebaseOrders.length);
-        setOrders(firebaseOrders);
-        setFirebaseError(null); // Clear error on success
-        // Also save to localStorage as backup
-        localStorage.setItem('bj_orders', JSON.stringify(firebaseOrders));
+        if (firebaseOrders.length > 0) {
+          console.log('✅ SDK: Received orders:', firebaseOrders.length);
+          setOrders(firebaseOrders);
+          setFirebaseError(null);
+          localStorage.setItem('bj_orders', JSON.stringify(firebaseOrders));
+        } else {
+          // SDK returned empty. Could be wrong DB URL. Try REST Fallback.
+          console.log('⚠️ SDK found 0 orders. Initiating Multi-Region Discovery...');
+          discoverOrdersFromRegions();
+        }
       },
       (error) => {
         setFirebaseError(error.message);
+        // On error, also try discovery
+        discoverOrdersFromRegions();
       }
     );
+
+    // Multi-Region Discovery Function
+    const discoverOrdersFromRegions = async () => {
+      const regions = [
+        "https://babaji-achar-default-rtdb.firebaseio.com",      // US Central
+        "https://babaji-achar.firebaseio.com",                   // Legacy
+        "https://babaji-achar-default-rtdb.asia-southeast1.firebasedatabase.app", // Singapore
+        "https://babaji-achar-default-rtdb.asia-south1.firebasedatabase.app"      // Mumbai
+      ];
+
+      for (const url of regions) {
+        try {
+          // We can read public data or use auth token if needed
+          // For admin panel usage, we ideally use the token.
+          // However, if the user is anonymous/guest, rules might block 'list' but allow 'read' if we knew IDs.
+          // But here we are admin/owner checking orders.
+          const token = auth.currentUser ? await auth.currentUser.getIdToken() : null;
+          const fetchUrl = token ? `${url}/orders.json?auth=${token}` : `${url}/orders.json`;
+
+          const res = await fetch(fetchUrl);
+          if (res.ok) {
+            const data = await res.json();
+            if (data) {
+              console.log(`✅ FOUND DATA at: ${url}`);
+              // Convert Map to Array
+              const ordersList = Object.keys(data).map(key => ({
+                ...data[key],
+                firebaseId: key
+              })).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+              if (ordersList.length > 0) {
+                console.log(`✅ Recovered ${ordersList.length} orders via REST.`);
+                setOrders(ordersList);
+                setFirebaseError(null);
+                // If this URL works, we should probably record it or alert the user
+                return; // Stop after finding data
+              }
+            }
+          }
+        } catch (e) {
+          console.warn(`Discovery failed for ${url}`, e);
+        }
+      }
+    };
 
     // 2. Load user and stores from localStorage
     const loadData = () => {
