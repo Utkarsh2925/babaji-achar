@@ -2009,23 +2009,7 @@ const AppContent: React.FC = () => {
                   <p className="text-sm font-black uppercase tracking-widest text-orange-400 mb-2">Order ID</p>
                   <p className="text-2xl font-black text-orange-900 font-mono tracking-wider mb-4">{currentOrder.id}</p>
 
-                  {/* SYNC STATUS INDICATOR */}
-                  <div className={`text-sm font-bold border-t border-orange-200 pt-4 flex flex-col items-center gap-1 ${syncStatus === 'SAVED' ? 'text-green-600' :
-                    syncStatus === 'FAILED' ? 'text-red-600' : 'text-orange-500'
-                    }`}>
-                    <div className="flex items-center gap-2">
-                      {syncStatus === 'PENDING' && <span className="animate-spin">⏳</span>}
-                      {syncStatus === 'SAVED' && <span>☁️</span>}
-                      {syncStatus === 'FAILED' && <span>⚠️</span>}
 
-                      <span>
-                        {syncStatus === 'PENDING' && 'Syncing to Server...'}
-                        {syncStatus === 'SAVED' && 'Saved to Cloud'}
-                        {syncStatus === 'FAILED' && 'Sync Failed!'}
-                      </span>
-                    </div>
-                    {syncStatus === 'FAILED' && <span className="text-xs max-w-xs">{syncError}</span>}
-                  </div>
                 </div>
 
                 {/* Security Note */}
