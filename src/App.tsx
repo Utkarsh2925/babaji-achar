@@ -325,6 +325,9 @@ const AppContent: React.FC = () => {
   };
 
   const [isCodLoading, setIsCodLoading] = useState(false);
+  /* SYNC TRACKING STATE */
+  const [syncStatus, setSyncStatus] = useState<'PENDING' | 'SAVED' | 'FAILED'>('PENDING');
+  const [syncError, setSyncError] = useState<string>('');
 
   // --- PRODUCTION COD HANDLER (FINAL) ---
   const executeCODOrder = (finalAmount: number, customerDetails: any) => {
@@ -351,13 +354,32 @@ const AppContent: React.FC = () => {
 
       console.log('🟡 COD: Order object created:', newOrder);
 
-      // Save to Firebase (instant now that database is enabled)
+      // Save to Firebase (With Tracking & Auth Check)
       console.log('🟡 COD: Attempting Firebase save...');
-      // Save to Firebase (Optimistic - Fire and Forget)
-      console.log('🟡 COD: Triggering Firebase save (Background)...');
-      OrderService.createOrder(newOrder).catch(e => console.error('background save failed', e));
+
+      // Reset Sync State
+      setSyncStatus('PENDING');
+      setSyncError('');
+
+      // Fallback Auth Check (Critical if global auth failed)
+      const saveOrderWithAuth = async () => {
+        try {
+          if (!auth.currentUser) await signInAnonymously(auth);
+          await OrderService.createOrder(newOrder);
+          setSyncStatus('SAVED');
+          console.log('✅ COD: Firebase Sync Success');
+        } catch (e: any) {
+          console.error('❌ COD: Firebase Sync Failed', e);
+          setSyncStatus('FAILED');
+          setSyncError(e.message || 'Unknown Error');
+        }
+      };
+
+      // Trigger Background Save
+      saveOrderWithAuth();
+
       console.log('✅ COD: Proceeding immediately...');
-      console.log('✅ COD: Firebase save successful!');
+      // console.log('✅ COD: Firebase save successful!');
 
       // Update local state
       const updatedOrders = [newOrder, ...orders];
@@ -1844,7 +1866,25 @@ const AppContent: React.FC = () => {
                 <p className="text-stone-500 font-medium mb-8">Thank you {user?.name}. We have received your order request.</p>
                 <div className="bg-orange-50 p-6 rounded-2xl mb-8 border border-orange-100">
                   <p className="text-sm font-black uppercase tracking-widest text-orange-400 mb-2">Order ID</p>
-                  <p className="text-2xl font-black text-orange-900 font-mono tracking-wider">{currentOrder.id}</p>
+                  <p className="text-2xl font-black text-orange-900 font-mono tracking-wider mb-4">{currentOrder.id}</p>
+
+                  {/* SYNC STATUS INDICATOR */}
+                  <div className={`text-sm font-bold border-t border-orange-200 pt-4 flex flex-col items-center gap-1 ${syncStatus === 'SAVED' ? 'text-green-600' :
+                      syncStatus === 'FAILED' ? 'text-red-600' : 'text-orange-500'
+                    }`}>
+                    <div className="flex items-center gap-2">
+                      {syncStatus === 'PENDING' && <span className="animate-spin">⏳</span>}
+                      {syncStatus === 'SAVED' && <span>☁️</span>}
+                      {syncStatus === 'FAILED' && <span>⚠️</span>}
+
+                      <span>
+                        {syncStatus === 'PENDING' && 'Syncing to Server...'}
+                        {syncStatus === 'SAVED' && 'Saved to Cloud'}
+                        {syncStatus === 'FAILED' && 'Sync Failed!'}
+                      </span>
+                    </div>
+                    {syncStatus === 'FAILED' && <span className="text-xs max-w-xs">{syncError}</span>}
+                  </div>
                 </div>
 
                 {/* Security Note */}
