@@ -20,7 +20,7 @@ const AdminProducts: React.FC<AdminProductsProps> = ({ products, onUpdateStock }
                     <div key={product.id} className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm flex flex-col gap-4">
                         <div className="flex gap-4">
                             <div className="w-24 h-24 rounded-2xl bg-stone-100 overflow-hidden shrink-0 border border-stone-100">
-                                <img src={product.mainImage} alt={product.name.en} className="w-full h-full object-cover" />
+                                <img src={product.mainImage} alt={product.name.en} className="w-full h-full object-cover" loading="lazy" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start mb-2">

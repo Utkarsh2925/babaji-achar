@@ -1057,7 +1057,7 @@ const AppContent: React.FC = () => {
           <div className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-700">
             {/* Full Screen Background with strong overlay */}
             <div className="absolute inset-0 z-0">
-              <img src="https://images.unsplash.com/photo-1590505677187-f9615628d068?w=1600" className="w-full h-full object-cover" alt="Heritage Background" />
+              <img src="https://images.unsplash.com/photo-1590505677187-f9615628d068?w=1600" className="w-full h-full object-cover" alt="Heritage Background" loading="lazy" />
               <div className="absolute inset-0 bg-orange-950/80 backdrop-blur-sm"></div>
             </div>
 
@@ -1154,7 +1154,7 @@ const AppContent: React.FC = () => {
                     onClick={handleGoogleLogin}
                     className="w-full h-16 bg-white text-stone-600 border-2 border-stone-200 rounded-3xl font-bold text-lg sm:text-xl shadow-md flex items-center justify-center gap-3 transition-all hover:bg-stone-50 hover:border-stone-300 active:scale-95"
                   >
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" loading="lazy" />
                     Sign in with Google
                   </button>
                 </form>
@@ -1383,7 +1383,7 @@ const AppContent: React.FC = () => {
                         {/* 100% Natural Stamp */}
                         <div className="absolute top-2 right-2 z-10 opacity-90 rotate-12 drop-shadow-lg">
                           <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
-                            <img src={organicBadge} alt="100% Organic" className="w-full h-full object-contain animate-pulse-slow filter drop-shadow-md" />
+                            <img src={organicBadge} alt="100% Organic" className="w-full h-full object-contain animate-pulse-slow filter drop-shadow-md" loading="lazy" />
                           </div>
                         </div>
                       </div>
