@@ -11,6 +11,7 @@ import {
 // import { PaymentService } from './services/PaymentService';
 import { WhatsAppService } from './services/WhatsAppService';
 import { OrderService } from './services/OrderService';
+import { NotificationService } from './services/NotificationService';
 import { UserProfileService } from './services/UserProfileService';
 // Firebase Auth Imports
 import { signInWithPopup, signInAnonymously } from 'firebase/auth';
@@ -119,6 +120,13 @@ const AppContent: React.FC = () => {
   const [checkoutName, setCheckoutName] = useState('');
   const [checkoutAddress, setCheckoutAddress] = useState('');
   const [checkoutPin, setCheckoutPin] = useState('');
+
+  // Marketing Consent (default: true for better UX)
+  const [marketingConsent, setMarketingConsent] = useState({
+    whatsapp: true,
+    email: true,
+    sms: true
+  });
 
   // Review state
   const [reviewRating, setReviewRating] = useState(5);
@@ -349,7 +357,8 @@ const AppContent: React.FC = () => {
         paymentStatus: 'Cash on Delivery',
         utrNumber: 'COD',
         razorpayOrderId: null,
-        razorpayPaymentId: null
+        razorpayPaymentId: null,
+        marketingConsent: marketingConsent
       };
 
       console.log('🟡 COD: Order object created:', newOrder);
@@ -456,6 +465,14 @@ const AppContent: React.FC = () => {
           console.log('✅ COD: WhatsApp sent');
         } catch (e) {
           console.error('⚠️ COD: WhatsApp failed:', e);
+        }
+
+        // Send automated notification via Communication Bot
+        try {
+          NotificationService.sendOrderConfirmation(newOrder);
+          console.log('✅ COD: Notification sent');
+        } catch (e) {
+          console.error('⚠️ COD: Notification failed:', e);
         }
       }, 100);
 
@@ -1910,6 +1927,23 @@ const AppContent: React.FC = () => {
                     </div>
 
                     <div className="flex justify-between items-center text-2xl font-black text-orange-950 pt-4 border-t-2 border-stone-200"><span>{t.total}</span><span>₹{cartValues.finalTotal}</span></div>
+
+                    {/* Marketing Consent Checkbox */}
+                    <div className="mt-6 pt-6 border-t border-dashed border-orange-100">
+                      <label className="flex items-start gap-3 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={marketingConsent.whatsapp}
+                          onChange={(e) => setMarketingConsent({ ...marketingConsent, whatsapp: e.target.checked })}
+                          className="mt-1 w-5 h-5 rounded border-orange-300 text-orange-600 focus:ring-orange-500"
+                        />
+                        <span className="text-sm text-stone-600 font-medium leading-relaxed">
+                          I agree to receive order updates and offers from <strong>Baba Ji Achar</strong> on WhatsApp.
+                          <br />
+                          <span className="text-xs text-stone-400 hindi-font">मैं बाबा जी अचार से व्हाट्सएप पर अपडेट और ऑफर प्राप्त करने के लिए सहमत हूं।</span>
+                        </span>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>

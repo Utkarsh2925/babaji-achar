@@ -58,6 +58,11 @@ export interface Order {
     utrNumber: string;
     razorpayOrderId?: string | null;
     razorpayPaymentId?: string | null;
+    marketingConsent?: {
+        whatsapp: boolean;
+        email: boolean;
+        sms: boolean;
+    };
 }
 
 export interface Address {
@@ -82,6 +87,11 @@ export interface User {
         city: string;
         state: string;
         pincode: string;
+    };
+    marketingConsent?: {
+        whatsapp: boolean;
+        email: boolean;
+        sms: boolean;
     };
 }
 
