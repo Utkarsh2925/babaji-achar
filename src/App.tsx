@@ -377,10 +377,12 @@ const AppContent: React.FC = () => {
 
           // 3. REST API WRITE (Multi-Region Retry)
           // Try the configured URL first, then fallbacks
+          // 3. REST API WRITE (Multi-Region Retry)
+          // Try the confirmed Singapore URL first
           const candidateUrls = [
-            "https://babaji-achar-default-rtdb.firebaseio.com", // Config URL (PRIORITY)
+            "https://babaji-achar-default-rtdb.asia-southeast1.firebasedatabase.app", // Singapore (CONFIRMED)
+            "https://babaji-achar-default-rtdb.firebaseio.com", // Default
             "https://babaji-achar.firebaseio.com", // Legacy
-            "https://babaji-achar-default-rtdb.asia-southeast1.firebasedatabase.app", // Singapore
             "https://babaji-achar-default-rtdb.asia-south1.firebasedatabase.app" // Mumbai
           ];
 
