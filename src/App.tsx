@@ -376,10 +376,10 @@ const AppContent: React.FC = () => {
           if (!token) throw new Error('Failed to get Auth Token');
 
           // 3. REST API WRITE (Multi-Region Retry)
-          // The 404 error implies 
+          // Try the configured URL first, then fallbacks
           const candidateUrls = [
-            "https://babaji-achar-default-rtdb.firebaseio.com", // Configured (Derived)
-            "https://babaji-achar.firebaseio.com", // Legacy
+            "https://babaji-achar.firebaseio.com", // Config URL (PRIORITY)
+            "https://babaji-achar-default-rtdb.firebaseio.com", // Default
             "https://babaji-achar-default-rtdb.asia-southeast1.firebasedatabase.app", // Singapore
             "https://babaji-achar-default-rtdb.asia-south1.firebasedatabase.app" // Mumbai
           ];
@@ -405,10 +405,11 @@ const AppContent: React.FC = () => {
 
               if (response.ok) {
                 const data = await response.json();
-                console.log('✅ COD: REST Sync Success, ID:', data.name);
+                console.log('✅ COD: REST Sync Success!');
+                console.log('✅ Working Database URL:', dbUrl);
+                console.log('✅ Order ID:', data.name);
                 setSyncStatus('SAVED');
                 success = true;
-                // TODO: Could update firebase.config here potentially
                 break;
               } else {
                 console.warn(`⚠️ Failed URL ${dbUrl}: ${response.status}`);
