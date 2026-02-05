@@ -66,49 +66,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         setIsSidebarOpen(false);
     };
 
-    // DEBUG: Force Connection Test
-    const runConnectionTest = async () => {
-        alert('🔄 Starting Test...');
-        console.log('🧪 Starting Connection Test...');
-        try {
-            // 0. Auth Check
-            if (!auth.currentUser) {
-                alert('❌ Auth Error: You are NOT logged in to Firebase. Anonymous Auth failed.');
-                return;
-            } else {
-                alert(`✅ Auth OK: User ID: ${auth.currentUser.uid} (Is Anon: ${auth.currentUser.isAnonymous})`);
-            }
 
-            // 1. Write Test
-            const testRef = ref(db, 'connection_test_' + Date.now());
-            await set(testRef, { timestamp: Date.now(), status: 'OK' });
-            alert('✅ Write Test Passed!');
-
-            // 2. Read Test
-            const ordersRef = ref(db, 'orders');
-            const snapshot = await get(ordersRef);
-            if (snapshot.exists()) {
-                alert(`✅ Read Test Passed! Found ${snapshot.size} orders.`);
-                console.log('Orders:', snapshot.val());
-            } else {
-                alert('⚠️ Read Test: Connection OK, but NO ORDERS found in "orders" path.');
-            }
-
-        } catch (e: any) {
-            console.error(e);
-            alert(`❌ Test Failed: ${e.message}`);
-        }
-    };
 
     return (
         <div className="min-h-screen bg-stone-50 flex font-sans">
-            {/* DEBUG TEST BUTTON - High Z-Index */}
-            <button
-                onClick={runConnectionTest}
-                className="fixed bottom-20 right-4 z-[99999] bg-blue-600 text-white px-6 py-4 rounded-full font-black shadow-2xl border-4 border-white text-lg hover:scale-105 active:scale-95 transition-all"
-            >
-                🧪 TEST DB
-            </button>
 
             {/* DEBUG BANNER FOR FIREBASE ERRORS */}
             {firebaseError && (
