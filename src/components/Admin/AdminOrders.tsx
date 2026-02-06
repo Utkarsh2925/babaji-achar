@@ -87,6 +87,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, updateOrderStatus, de
                                 <th className="p-4 text-xs font-black text-stone-400 uppercase tracking-widest">Date</th>
                                 <th className="p-4 text-xs font-black text-stone-400 uppercase tracking-widest">Items</th>
                                 <th className="p-4 text-xs font-black text-stone-400 uppercase tracking-widest">Total</th>
+                                <th className="p-4 text-xs font-black text-stone-400 uppercase tracking-widest">Payment</th>
                                 <th className="p-4 text-xs font-black text-stone-400 uppercase tracking-widest">Status</th>
                                 <th className="p-4 pr-6 text-xs font-black text-stone-400 uppercase tracking-widest text-right">Actions</th>
                             </tr>
@@ -110,6 +111,16 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({ orders, updateOrderStatus, de
                                             {order.items.map(i => `${i.productName} (${i.quantity})`).join(', ')}
                                         </td>
                                         <td className="p-4 font-black text-stone-900">₹{order.totalAmount}</td>
+                                        <td className="p-4">
+                                            <div className="flex flex-col">
+                                                <span className={`text-xs font-black uppercase ${order.paymentMethod === 'COD' ? 'text-amber-600' : 'text-blue-600'}`}>
+                                                    {order.paymentMethod}
+                                                </span>
+                                                <span className="text-[10px] font-bold text-stone-400">
+                                                    {order.paymentStatus}
+                                                </span>
+                                            </div>
+                                        </td>
                                         <td className="p-4">
                                             <select
                                                 value={order.status}

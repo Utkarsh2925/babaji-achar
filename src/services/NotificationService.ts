@@ -69,6 +69,22 @@ export const NotificationService = {
         } catch (error) {
             console.error('❌ Failed to send payment status:', error);
         }
+
+        // Also send Email (Fire and Forget)
+        if (order.marketingConsent?.email) {
+            fetch(`${API_BASE}/api/send-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: "mailbabajiachar@gmail.com", // Admin Email for trial or User Email if available
+                    // Note: In real prod, this should be order.customerDetails.email if you collect it.
+                    // For now using brand email as placeholder/admin-alert as per trial.
+                    subject: `Order #${order.id} Confirmed`,
+                    templateName: 'order_confirmation',
+                    parameters: { order }
+                })
+            }).catch(e => console.error('Email trigger failed', e));
+        }
     },
 
     /**

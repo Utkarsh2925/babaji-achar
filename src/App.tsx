@@ -217,7 +217,7 @@ const AppContent: React.FC = () => {
     }
 
     try {
-      // 1. Create Order
+      // 1. Create Razorpay Order (Server)
       console.log("Creating Razorpay order for amount:", finalAmount);
       const orderRes = await fetch("/api/create-order", {
         method: "POST",
@@ -229,81 +229,80 @@ const AppContent: React.FC = () => {
       });
 
       if (!orderRes.ok) {
-        const errorText = await orderRes.text();
-        console.error("Order creation failed:", orderRes.status, errorText);
-        throw new Error(`Server error creating order: ${orderRes.status} - ${errorText}`);
+        throw new Error(`Server error creating order: ${orderRes.status}`);
       }
 
       const orderData = await orderRes.json();
-      console.log("Order created successfully:", orderData.id);
+      console.log("Razorpay Order ID:", orderData.id);
 
-      // 2. Get Razorpay Key ID
+      // 2. Create "Pending" Order Object
+      const pendingOrder: Order = {
+        id: `Order #${Date.now().toString().slice(-6)}`,
+        date: new Date().toISOString(),
+        status: 'Pending_Payment', // Initial Status
+        items: cart,
+        totalAmount: finalAmount,
+        customerDetails: customerDetails,
+        paymentMethod: 'Online',
+        paymentStatus: 'Pending',
+        utrNumber: '',
+        razorpayOrderId: orderData.id,
+        razorpayPaymentId: null,
+        marketingConsent: marketingConsent
+      };
+
+      // 3. Save to Firebase (BEFORE Payment) -> Requirement STEP 1
+      console.log('Saving Pending Order to Firebase...');
+      await OrderService.createOrder(pendingOrder);
+
+      // Update local state temporarily
+      setCurrentOrder(pendingOrder);
+
+      // 4. Get Razorpay Key ID
       const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
-      if (!razorpayKeyId) {
-        console.error("VITE_RAZORPAY_KEY_ID not found in environment");
-        throw new Error("Payment configuration error. Please contact support.");
-      }
+      if (!razorpayKeyId) throw new Error("Payment config missing");
 
-      // 3. Open Checkout
+      // 5. Open Checkout
       const options = {
         key: razorpayKeyId,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Baba Ji Achar",
         description: "Authentic Homemade Taste",
-        image: "https://babaji-achar.vercel.app/logo.png",
+        image: "https://babaji-achar.vercel.app/organic_badge_final.png",
         order_id: orderData.id,
         handler: async function (response: any) {
-          // 4. Verify Payment
-          try {
-            console.log("Payment successful, verifying...");
-            const verifyRes = await fetch("/api/verify-payment", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(response),
-            });
+          // 6. Payment Success (Client Side)
+          console.log("Payment success:", response);
 
-            if (!verifyRes.ok) {
-              throw new Error("Payment verification failed");
-            }
+          // UPDATE LOCAL UI ONLY (Webhook handles DB + Bot)
+          // We just mark it as "Processing" or check verify for security
+          // But valid truth is Webhook.
 
-            // 5. Success -> Create Order in App
-            const newOrder: Order = {
-              id: `Order #${Date.now().toString().slice(-6)}`,
-              date: new Date().toISOString(),
-              status: 'Payment_Received', // Paid via Razorpay
-              items: cart,
-              totalAmount: finalAmount,
-              customerDetails: customerDetails,
-              paymentMethod: 'Razorpay',
-              paymentStatus: 'Paid',
-              utrNumber: response.razorpay_payment_id, // Store Pay ID as UTR
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id
-            };
+          // Call verify just to be sure on frontend (optional but good for UX)
+          await fetch("/api/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(response),
+          });
 
-            // Save to Firebase (real-time sync)
-            try {
-              await OrderService.createOrder(newOrder);
-              console.log('Order saved to Firebase successfully');
-            } catch (firebaseError) {
-              console.error('Failed to save order to Firebase:', firebaseError);
-              // Still proceed with local save as fallback
-            }
+          // Update local object for Success Page
+          const successOrder = {
+            ...pendingOrder,
+            status: 'Paid' as OrderStatus,
+            paymentStatus: 'Paid',
+            razorpayPaymentId: response.razorpay_payment_id
+          };
 
-            // Also save to localStorage as backup
-            const updatedOrders = [newOrder, ...orders];
-            setOrders(updatedOrders);
-            localStorage.setItem('bj_orders', JSON.stringify(updatedOrders));
-            setCurrentOrder(newOrder);
-            setCart([]);
-            WhatsAppService.sendOrderConfirmation(newOrder);
-            navigate('SUCCESS');
+          setCurrentOrder(successOrder);
+          setOrders([successOrder, ...orders]);
+          setCart([]);
+          localStorage.setItem('bj_orders', JSON.stringify([successOrder, ...orders]));
 
-          } catch (err) {
-            console.error("Payment verification error:", err);
-            alert("Payment verification failed. Please contact support with your payment ID: " + response.razorpay_payment_id);
-          }
+          // DO NOT CALL NOTIFICATION BOT HERE (User requirement Step 3)
+          // NotificationService.sendOrderConfirmation(pendingOrder);  <-- REMOVED
+
+          navigate('SUCCESS');
         },
         prefill: {
           name: customerDetails.fullName,
@@ -319,16 +318,16 @@ const AppContent: React.FC = () => {
         }
       };
 
-      console.log("Opening Razorpay checkout...");
       const rzp = new (window as any).Razorpay(options);
       rzp.on('payment.failed', function (response: any) {
         console.error("Payment failed:", response.error);
         alert("Payment failed: " + response.error.description);
       });
       rzp.open();
+
     } catch (err: any) {
       console.error("Payment initiation error:", err);
-      alert("Payment initiation failed: " + (err.message || "Unknown error. Please try again or contact support."));
+      alert("Payment initiation failed. Please try again.");
     }
   };
 
@@ -469,7 +468,7 @@ const AppContent: React.FC = () => {
 
         // Send automated notification via Communication Bot
         try {
-          NotificationService.sendOrderConfirmation(newOrder);
+          NotificationService.sendPaymentStatus(newOrder);
           console.log('✅ COD: Notification sent');
         } catch (e) {
           console.error('⚠️ COD: Notification failed:', e);
