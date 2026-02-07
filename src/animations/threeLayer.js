@@ -32,7 +32,11 @@ export const initThreeJS = () => {
 
         // Particles (Make them look like floating spices/dust)
         const geometry = new THREE.BufferGeometry();
-        const particlesCount = 200; // Keep count low
+
+        // Mobile Optimization: Fewer particles for stability
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const particlesCount = isMobile ? 60 : 250;
+
         const posArray = new Float32Array(particlesCount * 3);
 
         for (let i = 0; i < particlesCount * 3; i++) {
