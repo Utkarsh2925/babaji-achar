@@ -1,42 +1,58 @@
 import nodemailer from 'nodemailer';
 
 export default async function handler(req, res) {
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { to, subject, orderDetails, type = 'order_confirmation' } = req.body;
+
+    if (!to || !orderDetails) {
+      return res.status(400).json({ error: 'Missing required fields: to, orderDetails' });
     }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+    // Enhanced Gmail SMTP configuration with better authentication
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // Use STARTTLS
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_APP_PASSWORD,
+      },
+      tls: {
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+      },
+      debug: true, // Enable debug output
+      logger: true // Log information
+    });
 
-    try {
-        const { to, subject, orderDetails, type = 'order_confirmation' } = req.body;
+    // Verify transporter configuration
+    console.log('Verifying SMTP connection...');
+    console.log('Email User:', process.env.EMAIL_USER ? 'Set' : 'NOT SET');
+    console.log('Email Password:', process.env.EMAIL_APP_PASSWORD ? 'Set (length: ' + process.env.EMAIL_APP_PASSWORD.length + ')' : 'NOT SET');
 
-        if (!to || !orderDetails) {
-            return res.status(400).json({ error: 'Missing required fields: to, orderDetails' });
-        }
+    await transporter.verify();
+    console.log('SMTP connection verified successfully');
 
-        // Create transporter using Gmail SMTP
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_APP_PASSWORD,
-            },
-        });
+    // Generate HTML email based on type
+    let htmlContent = '';
 
-        // Generate HTML email based on type
-        let htmlContent = '';
-
-        if (type === 'order_confirmation') {
-            htmlContent = `
+    if (type === 'order_confirmation') {
+      htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -163,8 +179,8 @@ export default async function handler(req, res) {
 </body>
 </html>
       `;
-        } else if (type === 'status_update') {
-            htmlContent = `
+    } else if (type === 'status_update') {
+      htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -199,31 +215,31 @@ export default async function handler(req, res) {
 </body>
 </html>
       `;
-        }
-
-        // Send email
-        const info = await transporter.sendMail({
-            from: `"Baba Ji Achar" <${process.env.EMAIL_USER}>`,
-            to: to,
-            subject: subject || `Order Confirmation - ${orderDetails.orderId}`,
-            html: htmlContent,
-        });
-
-        console.log('Email sent successfully:', info.messageId);
-
-        return res.status(200).json({
-            success: true,
-            messageId: info.messageId,
-            message: 'Email sent successfully'
-        });
-
-    } catch (error) {
-        console.error('Email sending error:', error);
-        return res.status(500).json({
-            success: false,
-            error: 'Failed to send email',
-            details: error.message
-        });
     }
+
+    // Send email
+    const info = await transporter.sendMail({
+      from: `"Baba Ji Achar" <${process.env.EMAIL_USER}>`,
+      to: to,
+      subject: subject || `Order Confirmation - ${orderDetails.orderId}`,
+      html: htmlContent,
+    });
+
+    console.log('Email sent successfully:', info.messageId);
+
+    return res.status(200).json({
+      success: true,
+      messageId: info.messageId,
+      message: 'Email sent successfully'
+    });
+
+  } catch (error) {
+    console.error('Email sending error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to send email',
+      details: error.message
+    });
+  }
 }
 
