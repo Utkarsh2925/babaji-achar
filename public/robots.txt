@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://babajiachar.com/sitemap.xml
+Sitemap: https://babaji-achar.vercel.app/sitemap.xml

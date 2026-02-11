@@ -2278,6 +2278,17 @@ const AppContent: React.FC = () => {
           </div>
         </div>
 
+        {/* Brand Disambiguation Section */}
+        <div className="border-t border-stone-900 bg-stone-950/40 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="bg-amber-900/10 border border-amber-900/20 rounded-2xl p-6 text-center">
+              <p className="text-stone-400 text-sm font-medium leading-relaxed">
+                <strong className="text-amber-100 font-black">About Babaji Achar:</strong> Babaji Achar is a premium <strong className="text-orange-300">food brand</strong> specializing in authentic homemade Indian pickles. We are <strong className="text-orange-300">not affiliated with any spiritual, religious, or other entities</strong> with similar names. Our focus is purely on delivering the finest traditional pickles made with 100% organic ingredients.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Bottom Bar */}
         <div className="border-t border-stone-900 bg-black/20 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
